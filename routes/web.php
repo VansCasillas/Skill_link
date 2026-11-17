@@ -32,6 +32,7 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
     Route::get('/find-competitions', [ProfileController::class, 'index'])->name('competition.index');
     Route::get('/find-teams',        [CariTimController::class, 'index'])->name('recruitment.index');
     Route::get('/cari-tim',          [CariTimController::class, 'index'])->name('cari-tim');
+    Route::get('/filter-rekrutmen',  [CariTimController::class, 'filterRekrutmen'])->name('filter-rekrutmen');
     Route::get('/my-teams',          [ProfileController::class, 'index'])->name('tim.index');
     Route::get('/messages',          [ProfileController::class, 'index'])->name('messages.index');
     Route::get('/notifications',     [ProfileController::class, 'index'])->name('notifications');

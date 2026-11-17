@@ -121,5 +121,89 @@ class CariTimController extends Controller
 
         return view('mahasiswa.cari-tim', compact('menu', 'user', 'teams', 'myTeam'));
     }
+
+    public function filterRekrutmen(\Illuminate\Http\Request $request)
+    {
+        $u = $request->user();
+
+        $menu = [
+            ['Dashboard',    route('dashboard'),          'layout-dashboard', 'dashboard*'],
+            ['Profil Saya',  route('profile'),            'user',             'profile*'],
+            ['Cari Tim',     route('recruitment.index'),  'users',            '*find-teams*|*cari-tim*|*filter-rekrutmen*'],
+            ['Kelola Tim',   route('tim.index'),          'users-round',      'my-teams*'],
+            ['Pusat Lomba',  route('competition.index'),  'trophy',           'find-competitions*'],
+            ['Pesan',        route('messages.index'),     'message-circle',   'messages*'],
+            ['Notifikasi',   route('notifications'),      'bell',             'notifications*'],
+        ];
+
+        $user = [
+            'name'     => $u->name     ?? 'Dzaky',
+            'prodi'    => $u->prodi    ?? 'TRPL',
+            'angkatan' => $u->angkatan ?? (isset($u->npm) ? '20' . substr($u->npm, 0, 2) : '2025'),
+            'inisial'  => strtoupper(mb_substr($u->name ?? 'D', 0, 1)),
+        ];
+
+        // Tim yang membuka rekrutmen (sesuai desain Figma filter-rekrutmen)
+        $teams = [
+            [
+                'id'       => 1,
+                'nama'     => 'Byte Builders',
+                'lomba'    => 'Hackathon AI',
+                'kategori' => 'Hackathon',
+                'skills'   => ['Mobile', 'backend', 'UI/UX'],
+                'terisi'   => 3,
+                'total'    => 5,
+                'anggota'  => [
+                    ['inisial' => 'A', 'warna' => '#FF7616'],
+                    ['inisial' => 'C', 'warna' => '#22C55E'],
+                    ['inisial' => 'D', 'warna' => '#14B8A6'],
+                ],
+            ],
+            [
+                'id'       => 2,
+                'nama'     => 'Visioner Squad',
+                'lomba'    => 'UI/UX Design',
+                'kategori' => 'UI/UX Design',
+                'skills'   => ['IoT', 'Frontend'],
+                'terisi'   => 3,
+                'total'    => 3,
+                'anggota'  => [
+                    ['inisial' => 'D', 'warna' => '#14B8A6'],
+                    ['inisial' => 'S', 'warna' => '#ED409D'],
+                    ['inisial' => 'D', 'warna' => '#3B82F6'],
+                ],
+            ],
+            [
+                'id'       => 3,
+                'nama'     => 'Byte Builders',
+                'lomba'    => 'Hackathon AI',
+                'kategori' => 'Hackathon',
+                'skills'   => ['Mobile', 'backend', 'UI/UX'],
+                'terisi'   => 3,
+                'total'    => 5,
+                'anggota'  => [
+                    ['inisial' => 'M', 'warna' => '#FF7616'],
+                    ['inisial' => 'G', 'warna' => '#22C55E'],
+                    ['inisial' => 'I', 'warna' => '#14B8A6'],
+                ],
+            ],
+            [
+                'id'       => 4,
+                'nama'     => 'Visioner Squad',
+                'lomba'    => 'Backend',
+                'kategori' => 'Hackathon',
+                'skills'   => ['IoT', 'Frontend'],
+                'terisi'   => 3,
+                'total'    => 3,
+                'anggota'  => [
+                    ['inisial' => 'Z', 'warna' => '#14B8A6'],
+                    ['inisial' => 'P', 'warna' => '#ED409D'],
+                    ['inisial' => 'C', 'warna' => '#3B82F6'],
+                ],
+            ],
+        ];
+
+        return view('mahasiswa.filter-rekrutmen', compact('menu', 'user', 'teams'));
+    }
 }
 
