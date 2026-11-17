@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Mahasiswa\CariTimController;
 use App\Http\Controllers\Mahasiswa\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,7 +30,8 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
     Route::get('/dashboard',         [DashboardController::class, 'dashmahasiswa'])->name('dashboard');
     Route::get('/profile',           [ProfileController::class, 'index'])->name('profile');
     Route::get('/find-competitions', [ProfileController::class, 'index'])->name('competition.index');
-    Route::get('/find-teams',        [ProfileController::class, 'index'])->name('recruitment.index');
+    Route::get('/find-teams',        [CariTimController::class, 'index'])->name('recruitment.index');
+    Route::get('/cari-tim',          [CariTimController::class, 'index'])->name('cari-tim');
     Route::get('/my-teams',          [ProfileController::class, 'index'])->name('tim.index');
     Route::get('/messages',          [ProfileController::class, 'index'])->name('messages.index');
     Route::get('/notifications',     [ProfileController::class, 'index'])->name('notifications');

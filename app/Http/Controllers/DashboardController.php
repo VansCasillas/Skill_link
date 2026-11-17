@@ -15,7 +15,7 @@ class DashboardController extends Controller
         $menu = [
             ['Dashboard', route('dashboard'), 'layout-dashboard', 'dashboard'],
             ['Profile', route('profile'), 'user', 'profile'],
-            ['Find Teams', route('recruitment.index'), 'users', 'recruitment*'],
+            ['Find Teams', route('recruitment.index'), 'users', ['find-teams*', 'cari-tim*', 'recruitment*']],
 
             ['Messages', route('messages.index'), 'message-circle', 'messages*'],
             ['Notifications', route('notifications'), 'bell', 'notifications*'],

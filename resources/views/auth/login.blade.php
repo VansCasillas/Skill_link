@@ -11,12 +11,12 @@
     Daftar berhasil : redirect()->route('login')->with('registerOk', true)
 --}}
 @php
-  $loginErrors    = $errors->loginBag->any();
-  $registerErrors = $errors->registerBag->any();
-  $registerOk     = session()->has('registerOk');
+$loginErrors = $errors->loginBag->any();
+$registerErrors = $errors->registerBag->any();
+$registerOk = session()->has('registerOk');
 
-  // Buka panel Daftar jika ada error validasi pendaftaran
-  $showRegister = $registerErrors;
+// Buka panel Daftar jika ada error validasi pendaftaran
+$showRegister = $registerErrors;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -32,26 +32,33 @@
     <style>
         :root {
             color-scheme: light;
-            --bg:       #CBDEF6;
-            --blue:     #0989D8;
-            --btn:      #0A87D9;
-            --ink:      #0F172A;
-            --muted:    #475569;
-            --ph:       #64748B;
-            --line:     #475569;
-            --white:    #fff;
-            --err:      #D92D20;
-            --err-bg:   #FEF3F2;
+            --bg: #CBDEF6;
+            --blue: #0989D8;
+            --btn: #0A87D9;
+            --ink: #0F172A;
+            --muted: #475569;
+            --ph: #64748B;
+            --line: #475569;
+            --white: #fff;
+            --err: #D92D20;
+            --err-bg: #FEF3F2;
             --err-line: #FDA29B;
-            --ok:       #067647;
-            --ok-bg:    #ECFDF3;
-            --ok-line:  #6CE9A6;
+            --ok: #067647;
+            --ok-bg: #ECFDF3;
+            --ok-line: #6CE9A6;
             --ok-field: #12B76A;
             box-sizing: border-box;
         }
 
-        *, *::before, *::after { box-sizing: inherit }
-        html { height: 100% }
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit
+        }
+
+        html {
+            height: 100%
+        }
 
         body {
             height: 100%;
@@ -83,7 +90,7 @@
             background: var(--blue);
             border: 1px solid #000;
             border-radius: 28px;
-            box-shadow: 0 4px 4px rgba(0,0,0,.25);
+            box-shadow: 0 4px 4px rgba(0, 0, 0, .25);
             min-height: 476px;
             display: flex;
             flex-direction: column;
@@ -133,7 +140,7 @@
         .card {
             background: var(--white);
             border-radius: 24px;
-            box-shadow: 0 12px 32px rgba(10,51,102,.14);
+            box-shadow: 0 12px 32px rgba(10, 51, 102, .14);
             padding: 32px 32px 28px;
             min-height: 476px;
             display: flex;
@@ -148,7 +155,9 @@
             flex: 1;
         }
 
-        .view[hidden] { display: none }
+        .view[hidden] {
+            display: none
+        }
 
         .view h1 {
             margin: 0 0 2px;
@@ -171,7 +180,9 @@
             font-weight: 500;
         }
 
-        .banner[hidden] { display: none }
+        .banner[hidden] {
+            display: none
+        }
 
         .banner .ico {
             flex: none;
@@ -185,10 +196,25 @@
             font-size: 12px;
         }
 
-        .banner.error  { background: var(--err-bg); border-color: var(--err-line); color: var(--err) }
-        .banner.error .ico  { background: var(--err) }
-        .banner.ok     { background: var(--ok-bg);  border-color: var(--ok-line);  color: var(--ok)  }
-        .banner.ok .ico     { background: var(--ok)  }
+        .banner.error {
+            background: var(--err-bg);
+            border-color: var(--err-line);
+            color: var(--err)
+        }
+
+        .banner.error .ico {
+            background: var(--err)
+        }
+
+        .banner.ok {
+            background: var(--ok-bg);
+            border-color: var(--ok-line);
+            color: var(--ok)
+        }
+
+        .banner.ok .ico {
+            background: var(--ok)
+        }
 
         /* ─── Field ───────────────────────────────────────────────────── */
         .field {
@@ -218,7 +244,7 @@
 
         .input:focus-within {
             border-color: var(--btn);
-            box-shadow: 0 0 0 3px rgba(9,137,216,.22);
+            box-shadow: 0 0 0 3px rgba(9, 137, 216, .22);
         }
 
         .input input {
@@ -234,7 +260,9 @@
             padding: 0;
         }
 
-        .input input::placeholder { color: var(--ph) }
+        .input input::placeholder {
+            color: var(--ph)
+        }
 
         .input .mark {
             display: none;
@@ -259,10 +287,13 @@
             cursor: pointer;
         }
 
-        .toggle-pw:hover { color: var(--ink) }
+        .toggle-pw:hover {
+            color: var(--ink)
+        }
 
         .toggle-pw svg {
-            width: 18px; height: 18px;
+            width: 18px;
+            height: 18px;
             fill: none;
             stroke: currentColor;
             stroke-width: 1.6;
@@ -270,9 +301,17 @@
             stroke-linejoin: round;
         }
 
-        .toggle-pw .off                       { display: none  }
-        .toggle-pw[aria-pressed="true"] .on   { display: none  }
-        .toggle-pw[aria-pressed="true"] .off  { display: block }
+        .toggle-pw .off {
+            display: none
+        }
+
+        .toggle-pw[aria-pressed="true"] .on {
+            display: none
+        }
+
+        .toggle-pw[aria-pressed="true"] .off {
+            display: block
+        }
 
         /* Error / ok states */
         .msg {
@@ -284,11 +323,26 @@
             color: var(--err);
         }
 
-        .field.is-error label           { color: var(--err) }
-        .field.is-error .input          { background: var(--err-bg); border: 1.5px solid var(--err) }
-        .field.is-error .mark           { display: block }
-        .field.is-error .msg            { display: block }
-        .field.is-ok    .input          { border-color: var(--ok-field) }
+        .field.is-error label {
+            color: var(--err)
+        }
+
+        .field.is-error .input {
+            background: var(--err-bg);
+            border: 1.5px solid var(--err)
+        }
+
+        .field.is-error .mark {
+            display: block
+        }
+
+        .field.is-error .msg {
+            display: block
+        }
+
+        .field.is-ok .input {
+            border-color: var(--ok-field)
+        }
 
         /* ─── Buttons ─────────────────────────────────────────────────── */
         .buttons {
@@ -319,11 +373,16 @@
             text-decoration: none;
         }
 
-        .btn:hover  { filter: brightness(.92) }
-        .btn:active { transform: translateY(1px) }
+        .btn:hover {
+            filter: brightness(.92)
+        }
+
+        .btn:active {
+            transform: translateY(1px)
+        }
 
         .btn:focus-visible {
-            outline: 3px solid rgba(9,137,216,.45);
+            outline: 3px solid rgba(9, 137, 216, .45);
             outline-offset: 2px;
         }
 
@@ -334,7 +393,9 @@
             border: 1.5px solid var(--btn);
         }
 
-        .btn-outline:hover { background: #f0f7ff }
+        .btn-outline:hover {
+            background: #f0f7ff
+        }
 
         /* ─── Link teks ───────────────────────────────────────────────── */
         .back-link {
@@ -354,7 +415,9 @@
             gap: 4px;
         }
 
-        .back-link:hover { text-decoration: underline }
+        .back-link:hover {
+            text-decoration: underline
+        }
 
         /* ─── Note ────────────────────────────────────────────────────── */
         .note {
@@ -367,13 +430,30 @@
 
         /* ─── Responsive ──────────────────────────────────────────────── */
         @media (max-width: 900px) {
-            .wrap { grid-template-columns: 1fr; max-width: 570px }
+            .wrap {
+                grid-template-columns: 1fr;
+                max-width: 570px
+            }
 
-            .hero { min-height: 0; padding: 28px 20px 32px }
+            .hero {
+                min-height: 0;
+                padding: 28px 20px 32px
+            }
 
-            .logobox { width: 116px; height: 105px; border-radius: 24px }
-            .logobox img { width: 84px; height: 84px }
-            .brand { font-size: 26px }
+            .logobox {
+                width: 116px;
+                height: 105px;
+                border-radius: 24px
+            }
+
+            .logobox img {
+                width: 84px;
+                height: 84px
+            }
+
+            .brand {
+                font-size: 26px
+            }
 
             .hero h2 {
                 margin-top: 24px;
@@ -381,7 +461,10 @@
                 line-height: 1.18;
             }
 
-            .card { min-height: 0; padding: 24px 20px 24px }
+            .card {
+                min-height: 0;
+                padding: 24px 20px 24px
+            }
         }
     </style>
 </head>
@@ -406,11 +489,11 @@
                      VIEW: MASUK
                 ════════════════════════════════════════════════════ --}}
                 <form class="view"
-                      id="view-login"
-                      method="POST"
-                      action="{{ route('login.post') }}"
-                      novalidate
-                      @if($showRegister) hidden @endif>
+                    id="view-login"
+                    method="POST"
+                    action="{{ route('login.post') }}"
+                    novalidate
+                    @if($showRegister) hidden @endif>
                     @csrf
 
                     <h1>Masuk</h1>
@@ -436,19 +519,19 @@
                         <label for="login_email">Email</label>
                         <div class="input">
                             <input id="login_email"
-                                   name="email"
-                                   type="email"
-                                   value="{{ old('email') }}"
-                                   autocomplete="email"
-                                   placeholder="contoh@email.com"
-                                   required>
+                                name="email"
+                                type="email"
+                                value="{{ old('email') }}"
+                                autocomplete="email"
+                                placeholder="contoh@email.com"
+                                required>
                             <span class="mark" aria-hidden="true">!</span>
                         </div>
                         <p class="msg" role="alert">
                             @if($errors->loginBag->has('email'))
-                                {{ $errors->loginBag->first('email') }}
+                            {{ $errors->loginBag->first('email') }}
                             @else
-                                Email tidak terdaftar atau salah
+                            Email tidak terdaftar atau salah
                             @endif
                         </p>
                     </div>
@@ -458,22 +541,22 @@
                         <label for="login_password">Kata sandi</label>
                         <div class="input">
                             <input id="login_password"
-                                   name="password"
-                                   type="password"
-                                   autocomplete="current-password"
-                                   placeholder="••••••••"
-                                   required>
+                                name="password"
+                                type="password"
+                                autocomplete="current-password"
+                                placeholder="••••••••"
+                                required>
                             <span class="mark" aria-hidden="true">!</span>
                             <button class="toggle-pw" type="button"
-                                    data-target="login_password"
-                                    aria-label="Tampilkan kata sandi"
-                                    aria-pressed="false">
+                                data-target="login_password"
+                                aria-label="Tampilkan kata sandi"
+                                aria-pressed="false">
                                 <svg class="on" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/>
-                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+                                    <circle cx="12" cy="12" r="3" />
                                 </svg>
                                 <svg class="off" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 5c6.4 0 10 7 10 7a17 17 0 01-3.1 4M6.5 6.9C3.6 8.8 2 12 2 12s3.6 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 004.2 4.2"/>
+                                    <path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 5c6.4 0 10 7 10 7a17 17 0 01-3.1 4M6.5 6.9C3.6 8.8 2 12 2 12s3.6 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 004.2 4.2" />
                                 </svg>
                             </button>
                         </div>
@@ -484,8 +567,8 @@
                     <div class="buttons">
                         <button class="btn" type="submit">Masuk</button>
                         <button class="btn btn-outline"
-                                type="button"
-                                id="go-to-register">Daftar</button>
+                            type="button"
+                            id="go-to-register">Daftar</button>
                     </div>
                 </form>
 
@@ -493,11 +576,11 @@
                      VIEW: DAFTAR
                 ════════════════════════════════════════════════════ --}}
                 <form class="view"
-                      id="view-register"
-                      method="POST"
-                      action="{{ route('register') }}"
-                      novalidate
-                      @if(!$showRegister) hidden @endif>
+                    id="view-register"
+                    method="POST"
+                    action="{{ route('register') }}"
+                    novalidate
+                    @if(!$showRegister) hidden @endif>
                     @csrf
 
                     {{-- Tombol kembali --}}
@@ -520,12 +603,12 @@
                         <label for="reg_name">Username</label>
                         <div class="input">
                             <input id="reg_name"
-                                   name="name"
-                                   type="text"
-                                   value="{{ old('name') }}"
-                                   autocomplete="username"
-                                   placeholder="Nama pengguna Anda"
-                                   required>
+                                name="name"
+                                type="text"
+                                value="{{ old('name') }}"
+                                autocomplete="username"
+                                placeholder="Nama pengguna Anda"
+                                required>
                             <span class="mark" aria-hidden="true">!</span>
                         </div>
                         <p class="msg" role="alert">
@@ -538,12 +621,12 @@
                         <label for="reg_email">Email</label>
                         <div class="input">
                             <input id="reg_email"
-                                   name="email"
-                                   type="email"
-                                   value="{{ old('email') }}"
-                                   autocomplete="email"
-                                   placeholder="contoh@email.com"
-                                   required>
+                                name="email"
+                                type="email"
+                                value="{{ old('email') }}"
+                                autocomplete="email"
+                                placeholder="contoh@email.com"
+                                required>
                             <span class="mark" aria-hidden="true">!</span>
                         </div>
                         <p class="msg" role="alert">
@@ -556,11 +639,11 @@
                         <label for="reg_npm">NPM</label>
                         <div class="input">
                             <input id="reg_npm"
-                                   name="npm"
-                                   type="text"
-                                   value="{{ old('npm') }}"
-                                   placeholder="Nomor Pokok Mahasiswa"
-                                   required>
+                                name="npm"
+                                type="text"
+                                value="{{ old('npm') }}"
+                                placeholder="Nomor Pokok Mahasiswa"
+                                required>
                             <span class="mark" aria-hidden="true">!</span>
                         </div>
                         <p class="msg" role="alert">
@@ -573,22 +656,22 @@
                         <label for="reg_password">Kata sandi</label>
                         <div class="input">
                             <input id="reg_password"
-                                   name="password"
-                                   type="password"
-                                   autocomplete="new-password"
-                                   placeholder="Min. 8 karakter"
-                                   required>
+                                name="password"
+                                type="password"
+                                autocomplete="new-password"
+                                placeholder="Min. 8 karakter"
+                                required>
                             <span class="mark" aria-hidden="true">!</span>
                             <button class="toggle-pw" type="button"
-                                    data-target="reg_password"
-                                    aria-label="Tampilkan kata sandi"
-                                    aria-pressed="false">
+                                data-target="reg_password"
+                                aria-label="Tampilkan kata sandi"
+                                aria-pressed="false">
                                 <svg class="on" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/>
-                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+                                    <circle cx="12" cy="12" r="3" />
                                 </svg>
                                 <svg class="off" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 5c6.4 0 10 7 10 7a17 17 0 01-3.1 4M6.5 6.9C3.6 8.8 2 12 2 12s3.6 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 004.2 4.2"/>
+                                    <path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 5c6.4 0 10 7 10 7a17 17 0 01-3.1 4M6.5 6.9C3.6 8.8 2 12 2 12s3.6 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 004.2 4.2" />
                                 </svg>
                             </button>
                         </div>
@@ -609,18 +692,18 @@
     </main>
 
     <script>
-        (function () {
+        (function() {
             'use strict';
 
-            var viewLogin    = document.getElementById('view-login');
+            var viewLogin = document.getElementById('view-login');
             var viewRegister = document.getElementById('view-register');
-            var btnToReg     = document.getElementById('go-to-register');
-            var btnToLogin   = document.getElementById('go-to-login');
+            var btnToReg = document.getElementById('go-to-register');
+            var btnToLogin = document.getElementById('go-to-login');
 
             /* ── Pindah ke form Daftar ──────────────────────────────── */
             if (btnToReg) {
-                btnToReg.addEventListener('click', function () {
-                    viewLogin.hidden    = true;
+                btnToReg.addEventListener('click', function() {
+                    viewLogin.hidden = true;
                     viewRegister.hidden = false;
                     var first = viewRegister.querySelector('input');
                     if (first) first.focus();
@@ -629,18 +712,18 @@
 
             /* ── Kembali ke form Masuk ──────────────────────────────── */
             if (btnToLogin) {
-                btnToLogin.addEventListener('click', function () {
+                btnToLogin.addEventListener('click', function() {
                     viewRegister.hidden = true;
-                    viewLogin.hidden    = false;
+                    viewLogin.hidden = false;
                     var first = viewLogin.querySelector('input');
                     if (first) first.focus();
                 });
             }
 
             /* ── Toggle show/hide password ──────────────────────────── */
-            document.querySelectorAll('.toggle-pw').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    var inp  = document.getElementById(btn.getAttribute('data-target'));
+            document.querySelectorAll('.toggle-pw').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var inp = document.getElementById(btn.getAttribute('data-target'));
                     var show = inp.type === 'password';
                     inp.type = show ? 'text' : 'password';
                     btn.setAttribute('aria-pressed', show ? 'true' : 'false');
@@ -651,13 +734,13 @@
             });
 
             /* ── Reset state error saat user mulai mengetik ──────────── */
-            [viewLogin, viewRegister].forEach(function (form) {
+            [viewLogin, viewRegister].forEach(function(form) {
                 if (!form) return;
-                form.addEventListener('input', function () {
-                    form.querySelectorAll('.field').forEach(function (f) {
+                form.addEventListener('input', function() {
+                    form.querySelectorAll('.field').forEach(function(f) {
                         f.classList.remove('is-error', 'is-ok');
                     });
-                    form.querySelectorAll('.banner').forEach(function (b) {
+                    form.querySelectorAll('.banner').forEach(function(b) {
                         b.hidden = true;
                     });
                 });
