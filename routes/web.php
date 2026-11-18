@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Mahasiswa\CariTimController;
+use App\Http\Controllers\Mahasiswa\PortofolioController;
 use App\Http\Controllers\Mahasiswa\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,4 +37,12 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
     Route::get('/my-teams',          [ProfileController::class, 'index'])->name('tim.index');
     Route::get('/messages',          [ProfileController::class, 'index'])->name('messages.index');
     Route::get('/notifications',     [ProfileController::class, 'index'])->name('notifications');
+
+    // ── Susunan Portofolio ────────────────────────────────────────────────────
+    Route::get   ('/susunan-portofolio',               [PortofolioController::class, 'index']           )->name('portofolio.index');
+    Route::post  ('/susunan-portofolio',               [PortofolioController::class, 'store']           )->name('portofolio.store');
+    Route::post  ('/susunan-portofolio/{id}/toggle',   [PortofolioController::class, 'toggleVisibility'])->name('portofolio.toggle');
+    Route::post  ('/susunan-portofolio/reorder',       [PortofolioController::class, 'reorder']         )->name('portofolio.reorder');
+    Route::put   ('/susunan-portofolio/{id}',          [PortofolioController::class, 'update']          )->name('portofolio.update');
+    Route::delete('/susunan-portofolio/{id}',          [PortofolioController::class, 'destroy']         )->name('portofolio.destroy');
 });
