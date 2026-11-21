@@ -21,11 +21,11 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => ['required', 'email'],
+            'email' => ['required', 'email'],
             'password' => ['required'],
         ], [
-            'email.required'    => 'Email wajib diisi.',
-            'email.email'       => 'Format email tidak valid.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
             'password.required' => 'Kata sandi wajib diisi.',
         ]);
 
@@ -33,7 +33,11 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended('/dashboard');
+            $destination = Auth::user()->role === 'admin'
+                ? route('competition.manage.index')
+                : route('dashboard');
+
+            return redirect()->intended($destination);
         }
 
         return back()
@@ -48,20 +52,20 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-            'npm'      => ['required', 'string', 'max:20', 'unique:users,npm'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'npm' => ['required', 'string', 'max:20', 'unique:users,npm'],
             'password' => ['required', 'string', PasswordRule::min(8)],
         ], [
-            'name.required'     => 'Username wajib diisi.',
-            'name.max'          => 'Username maksimal 255 karakter.',
-            'email.required'    => 'Email wajib diisi.',
-            'email.email'       => 'Format email tidak valid.',
-            'email.unique'      => 'Email sudah terdaftar.',
-            'npm.required'      => 'NPM wajib diisi.',
-            'npm.unique'        => 'NPM sudah terdaftar.',
+            'name.required' => 'Username wajib diisi.',
+            'name.max' => 'Username maksimal 255 karakter.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah terdaftar.',
+            'npm.required' => 'NPM wajib diisi.',
+            'npm.unique' => 'NPM sudah terdaftar.',
             'password.required' => 'Kata sandi wajib diisi.',
-            'password.min'      => 'Kata sandi minimal 8 karakter.',
+            'password.min' => 'Kata sandi minimal 8 karakter.',
         ]);
 
         if ($validator->fails()) {
@@ -71,11 +75,11 @@ class AuthController extends Controller
         }
 
         User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'npm'      => $request->npm,
+            'name' => $request->name,
+            'email' => $request->email,
+            'npm' => $request->npm,
             'password' => Hash::make($request->password),
-            'role'     => 'mahasiswa',
+            'role' => 'mahasiswa',
         ]);
 
         // Jangan auto-login — redirect ke halaman login dengan notifikasi sukses

@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Beranda · Skill Link</title>
+    <title>@yield('title', 'Beranda') · Skill Link</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -878,10 +878,22 @@
 
         <span class="brand-name">Skill Link</span>
 
-        <label class="search">
-            <i data-lucide="search" class="i" aria-hidden="true"></i>
-            <input type="search" placeholder="Cari lomba, tim, atau skill..." aria-label="Cari">
-        </label>
+        @if (request()->routeIs('competition.manage.index'))
+            <form class="search" method="GET" action="{{ route('competition.manage.index') }}" role="search">
+                <i data-lucide="search" class="i" aria-hidden="true"></i>
+                <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari lomba, tim, atau skill..." aria-label="Cari lomba">
+                @foreach (request()->query() as $queryKey => $queryValue)
+                    @if ($queryKey !== 'q' && ! is_array($queryValue))
+                        <input type="hidden" name="{{ $queryKey }}" value="{{ $queryValue }}">
+                    @endif
+                @endforeach
+            </form>
+        @else
+            <label class="search">
+                <i data-lucide="search" class="i" aria-hidden="true"></i>
+                <input type="search" placeholder="Cari lomba, tim, atau skill..." aria-label="Cari">
+            </label>
+        @endif
 
         <div class="tb-right">
             <button class="icon-btn" type="button" aria-label="Notifikasi">
@@ -894,7 +906,7 @@
                 </span>
                 <span class="me-text">
                     <span class="me-name">{{ $user['name'] }}</span>
-                    <span class="me-sub">{{ $user['prodi'] ?? 'TRPL' }} · Angkatan {{ $user['angkatan'] ?? '' }}</span>
+                    <span class="me-sub">{{ $user['subline'] ?? (($user['prodi'] ?? 'TRPL') . ' · Angkatan ' . ($user['angkatan'] ?? '')) }}</span>
                 </span>
             </div>
         </div>
