@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Mahasiswa;
 
 use App\Http\Controllers\Controller;
 use App\Models\Portfolio;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -89,6 +90,31 @@ class PortofolioController extends Controller
                 'urutan' => 5,
             ],
         ];
+    }
+
+    /**
+     * Tampilkan portofolio yang sudah dipublikasikan.
+     */
+    public function publicIndex(Request $request): View
+    {
+        $u = $request->user();
+        $portfolios = Portfolio::where('user_id', $u->id)
+            ->where('status', 'approved')
+            ->where('is_visible', true)
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (Portfolio $portfolio): array => $this->toViewData($portfolio));
+
+        return view('mahasiswa.portofolio-publik', [
+            'menu' => $this->buildMenu(),
+            'user' => [
+                'name' => $u->name,
+                'prodi' => $u->prodi ?? 'TRPL',
+                'angkatan' => $u->angkatan ?? substr((string) $u->npm, 0, 2),
+                'inisial' => strtoupper(mb_substr($u->name, 0, 1)),
+            ],
+            'portfolios' => $portfolios,
+        ]);
     }
 
     /**

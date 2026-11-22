@@ -924,7 +924,7 @@ textarea.form-control { resize: vertical; min-height: 80px; }
                         </li>
                         @endforelse
                     </ul>
-                    <a href="{{ route('profile') }}" class="btn-lihat-semua">
+                    <a href="{{ route('portofolio.public') }}" class="btn-lihat-semua">
                         <i data-lucide="external-link" style="width:13px;height:13px;"></i>
                         Lihat Semua Portofolio
                     </a>

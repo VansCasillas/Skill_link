@@ -60,4 +60,55 @@ class PortfolioValidationTest extends TestCase
             'status' => 'approved',
         ]);
     }
+
+    public function test_student_can_view_all_approved_visible_portfolios_on_a_dedicated_page(): void
+    {
+        $student = User::factory()->create(['role' => 'mahasiswa']);
+
+        Portfolio::create([
+            'user_id' => $student->id,
+            'title' => 'Portofolio Publik',
+            'type' => 'Proyek',
+            'evidence_path' => 'portfolio-evidence/public.jpg',
+            'status' => 'approved',
+            'is_visible' => true,
+            'sort_order' => 1,
+        ]);
+        Portfolio::create([
+            'user_id' => $student->id,
+            'title' => 'Portofolio Tersembunyi',
+            'type' => 'Proyek',
+            'evidence_path' => 'portfolio-evidence/hidden.jpg',
+            'status' => 'approved',
+            'is_visible' => false,
+            'sort_order' => 2,
+        ]);
+        Portfolio::create([
+            'user_id' => $student->id,
+            'title' => 'Portofolio Menunggu',
+            'type' => 'Proyek',
+            'evidence_path' => 'portfolio-evidence/pending.jpg',
+            'status' => 'pending',
+            'is_visible' => true,
+            'sort_order' => 3,
+        ]);
+
+        $this->actingAs($student)
+            ->get(route('portofolio.public'))
+            ->assertOk()
+            ->assertSee('Portofolio Publik')
+            ->assertDontSee('Portofolio Tersembunyi')
+            ->assertDontSee('Portofolio Menunggu')
+            ->assertSee(route('portofolio.index'));
+    }
+
+    public function test_portfolio_preview_links_to_the_dedicated_public_portfolio_page(): void
+    {
+        $student = User::factory()->create(['role' => 'mahasiswa']);
+
+        $this->actingAs($student)
+            ->get(route('portofolio.index'))
+            ->assertOk()
+            ->assertSee('<a href="'.route('portofolio.public').'" class="btn-lihat-semua">', false);
+    }
 }

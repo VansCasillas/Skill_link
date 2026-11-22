@@ -920,7 +920,7 @@
                 <i data-lucide="search" class="i" aria-hidden="true"></i>
                 <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari nama tim atau lomba..." aria-label="Cari nama tim atau lomba">
             </form>
-        @elseif (! request()->routeIs('portofolio.index'))
+        @elseif (! request()->routeIs('portofolio.index', 'portofolio.public'))
             <form class="search" method="GET" action="{{ route(auth()->user()?->role === 'admin' ? 'competition.manage.index' : 'competition.index') }}" role="search">
                 <i data-lucide="search" class="i" aria-hidden="true"></i>
                 <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari lomba, tim, atau skill..." aria-label="Cari lomba, tim, atau skill">

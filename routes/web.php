@@ -105,6 +105,7 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
 
     // ── Susunan Portofolio ────────────────────────────────────────────────────
     Route::get('/susunan-portofolio', [PortofolioController::class, 'index'])->name('portofolio.index');
+    Route::get('/susunan-portofolio/publik', [PortofolioController::class, 'publicIndex'])->name('portofolio.public');
     Route::post('/susunan-portofolio', [PortofolioController::class, 'store'])->name('portofolio.store');
     Route::post('/susunan-portofolio/{id}/toggle', [PortofolioController::class, 'toggleVisibility'])->name('portofolio.toggle');
     Route::post('/susunan-portofolio/reorder', [PortofolioController::class, 'reorder'])->name('portofolio.reorder');
