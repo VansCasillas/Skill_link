@@ -905,11 +905,21 @@
                 <i data-lucide="search" class="i" aria-hidden="true"></i>
                 <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari lomba atau penyelenggara..." aria-label="Cari lomba">
             </form>
-        @elseif (! request()->routeIs('portofolio.index'))
-            <label class="search">
+        @elseif (request()->routeIs('recruitment.index', 'cari-tim'))
+            <form class="search" method="GET" action="{{ route('recruitment.index') }}" role="search">
                 <i data-lucide="search" class="i" aria-hidden="true"></i>
-                <input type="search" placeholder="Cari lomba, tim, atau skill..." aria-label="Cari">
-            </label>
+                <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari nama tim, lomba, atau skill..." aria-label="Cari nama tim, lomba, atau skill">
+            </form>
+        @elseif (request()->routeIs('tim.index'))
+            <form class="search" method="GET" action="{{ route('tim.index') }}" role="search">
+                <i data-lucide="search" class="i" aria-hidden="true"></i>
+                <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari nama tim atau lomba..." aria-label="Cari nama tim atau lomba">
+            </form>
+        @elseif (! request()->routeIs('portofolio.index'))
+            <form class="search" method="GET" action="{{ route(auth()->user()?->role === 'admin' ? 'competition.manage.index' : 'competition.index') }}" role="search">
+                <i data-lucide="search" class="i" aria-hidden="true"></i>
+                <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari lomba, tim, atau skill..." aria-label="Cari lomba, tim, atau skill">
+            </form>
         @endif
 
         <div class="tb-right">

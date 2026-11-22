@@ -11,6 +11,7 @@ class CariTimController extends Controller
     public function index(Request $request)
     {
         $u = $request->user();
+        $search = mb_strtolower(trim((string) $request->query('q', '')));
         $teamNames = [
             'Tim Garuda Code',
             'Tim PixelForce',
@@ -136,6 +137,20 @@ class CariTimController extends Controller
 
             return $team;
         }, $teams);
+
+        if ($search !== '') {
+            $teams = array_values(array_filter($teams, function (array $team) use ($search): bool {
+                $searchable = mb_strtolower(implode(' ', [
+                    $team['nama'],
+                    $team['lomba'],
+                    $team['kategori'],
+                    $team['deskripsi'],
+                    ...$team['skills'],
+                ]));
+
+                return str_contains($searchable, $search);
+            }));
+        }
 
         // Data Tim Saya (side card)
         $myTeam = [

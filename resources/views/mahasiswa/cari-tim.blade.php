@@ -850,6 +850,7 @@
             </svg>
             <input type="text"
                    id="ct-search-input"
+                   value="{{ request('q') }}"
                    placeholder="Cari nama tim, lomba, atau skill..."
                    aria-label="Cari nama tim, lomba, atau skill">
         </div>

@@ -40,6 +40,7 @@ class MahasiswaPageController extends Controller
     public function teams(Request $request): View
     {
         $user = $request->user();
+        $search = mb_strtolower(trim((string) $request->query('q', '')));
         $ownedTeam = Team::firstOrCreate(
             ['name' => 'Tim Garuda Code'],
             [
@@ -50,10 +51,19 @@ class MahasiswaPageController extends Controller
             ]
         );
 
-        $teams = Team::where(function ($query) use ($user): void {
+        $teamsQuery = Team::where(function ($query) use ($user): void {
             $query->where('owner_id', $user->id)
                 ->orWhereHas('joinRequests', fn ($joinQuery) => $joinQuery->where('user_id', $user->id)->where('status', 'approved'));
-        })->get()->map(function (Team $team) use ($user): array {
+        });
+
+        if ($search !== '') {
+            $teamsQuery->where(function ($query) use ($search): void {
+                $query->whereRaw('LOWER(name) LIKE ?', ['%'.$search.'%'])
+                    ->orWhereRaw('LOWER(competition) LIKE ?', ['%'.$search.'%']);
+            });
+        }
+
+        $teams = $teamsQuery->get()->map(function (Team $team) use ($user): array {
             return [
                 'id' => $team->id,
                 'name' => $team->name,
@@ -61,6 +71,8 @@ class MahasiswaPageController extends Controller
                 'role' => $team->owner_id === $user->id ? 'Ketua' : 'Anggota',
                 'members' => $team->members_count,
                 'capacity' => $team->capacity,
+                'skills' => $team->skills ?? [],
+                'status' => $team->owner_id === $user->id ? 'Dibuka' : 'Aktif',
             ];
         })->all();
 
