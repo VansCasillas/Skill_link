@@ -439,7 +439,7 @@
 <div class="pf">
     <h1>Edit Profil</h1>
 
-    <form id="pf-form" method="POST" action="{{ url('/profil') }}" enctype="multipart/form-data" novalidate>
+    <form id="pf-form" method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" novalidate>
         @csrf
         @method('PUT')
         <input type="hidden" name="hapus_foto" id="hapus-foto" value="0">

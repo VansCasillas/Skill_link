@@ -16,26 +16,19 @@ class ProfileController extends Controller
     public function index(Request $request)
     {
         $u = $request->user();
-        $menu = [
-            ['Dashboard', route('dashboard'), 'layout-dashboard', 'dashboard'],
-            ['Profile', route('profile'), 'user', 'profile'],
-            ['Find Teams', route('recruitment.index'), 'users', ['find-teams*', 'cari-tim*', 'recruitment*']],
 
-            ['Messages', route('messages.index'), 'message-circle', 'messages*'],
-            ['Notifications', route('notifications'), 'bell', 'notifications*'],
-        ];
         return view('mahasiswa.profile', [
-            'menu' => $menu,
+            'menu' => $this->buildMenu(),
             'user' => [
-                'name'     => $u->name,
-                'npm'      => $u->npm,
-                'jurusan'  => $u->jurusan,
-                'prodi'    => $u->prodi ?? 'TRPL',
-                'email'    => $u->email,
+                'name' => $u->name,
+                'npm' => $u->npm,
+                'jurusan' => $u->jurusan,
+                'prodi' => $u->prodi ?? 'TRPL',
+                'email' => $u->email,
                 'angkatan' => $u->angkatan,
-                'bio'      => $u->bio,
-                'foto'     => $u->foto ? Storage::url($u->foto) : null,
-                'inisial'  => strtoupper(mb_substr($u->name ?? 'U', 0, 1)),
+                'bio' => $u->bio,
+                'foto' => $u->foto ? Storage::url($u->foto) : null,
+                'inisial' => strtoupper(mb_substr($u->name ?? 'U', 0, 1)),
             ],
             'stats' => ['profil' => $this->hitungKelengkapan($u)],
         ]);
@@ -72,21 +65,21 @@ class ProfileController extends Controller
     {
         $u = $request->user();
 
-        $user = [
-            'name'     => $u->name,
-            'npm'      => $u->npm,
-            'jurusan'  => $u->jurusan,
-            'prodi'    => $u->prodi ?? 'TRPL',
-            'email'    => $u->email,
-            'angkatan' => $u->angkatan,
-            'bio'      => $u->bio,
-            'foto'     => $u->foto ? Storage::url($u->foto) : null,
-            'inisial'  => strtoupper(mb_substr($u->name ?? 'U', 0, 1)),
-        ];
-
-        $stats = ['profil' => $this->hitungKelengkapan($u)];
-
-        return view('profil', compact('user', 'stats'));
+        return view('mahasiswa.profile', [
+            'menu' => $this->buildMenu(),
+            'user' => [
+                'name' => $u->name,
+                'npm' => $u->npm,
+                'jurusan' => $u->jurusan,
+                'prodi' => $u->prodi ?? 'TRPL',
+                'email' => $u->email,
+                'angkatan' => $u->angkatan,
+                'bio' => $u->bio,
+                'foto' => $u->foto ? Storage::url($u->foto) : null,
+                'inisial' => strtoupper(mb_substr($u->name ?? 'U', 0, 1)),
+            ],
+            'stats' => ['profil' => $this->hitungKelengkapan($u)],
+        ]);
     }
 
     /**
@@ -97,23 +90,23 @@ class ProfileController extends Controller
         $u = $request->user();
 
         $data = $request->validate([
-            'name'     => ['required', 'string', 'max:100'],
-            'npm'      => ['required', 'digits_between:6,20', Rule::unique('users', 'npm')->ignore($u->id)],
-            'jurusan'  => ['required', 'string', 'max:100'],
-            'prodi'    => ['required', 'string', 'max:100'],
-            'email'    => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($u->id)],
-            'angkatan' => ['required', 'digits:4', 'integer', 'between:2000,' . (now()->year + 1)],
-            'bio'      => ['required', 'string', 'max:300'],
-            'foto'     => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'name' => ['required', 'string', 'max:100'],
+            'npm' => ['required', 'digits_between:6,20', Rule::unique('users', 'npm')->ignore($u->id)],
+            'jurusan' => ['required', 'string', 'max:100'],
+            'prodi' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($u->id)],
+            'angkatan' => ['required', 'digits:4', 'integer', 'between:2000,'.(now()->year + 1)],
+            'bio' => ['required', 'string', 'max:300'],
+            'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ], [
-            'required'       => ':attribute wajib diisi.',
-            'email'          => 'Format email tidak valid.',
-            'unique'         => ':attribute sudah digunakan.',
-            'digits'         => ':attribute harus :digits digit.',
+            'required' => ':attribute wajib diisi.',
+            'email' => 'Format email tidak valid.',
+            'unique' => ':attribute sudah digunakan.',
+            'digits' => ':attribute harus :digits digit.',
             'digits_between' => ':attribute harus berupa angka (:min-:max digit).',
-            'max.string'     => ':attribute maksimal :max karakter.',
-            'mimes'          => 'Format foto harus JPG atau PNG.',
-            'foto.max'       => 'Ukuran foto maksimal 2 MB.',
+            'max.string' => ':attribute maksimal :max karakter.',
+            'mimes' => 'Format foto harus JPG atau PNG.',
+            'foto.max' => 'Ukuran foto maksimal 2 MB.',
         ], [
             'name' => 'Nama lengkap',
             'npm' => 'NPM',
@@ -141,7 +134,7 @@ class ProfileController extends Controller
 
         $u->update($data);
 
-        return redirect()->route('profil.edit')->with('success', true);
+        return redirect()->route('profile')->with('success', true);
     }
 
     private function hitungKelengkapan($u): int
@@ -150,6 +143,20 @@ class ProfileController extends Controller
         $terisi = collect($isian)->filter(fn ($f) => filled($u->{$f}))->count();
 
         return (int) round($terisi / count($isian) * 100);
+    }
+
+    private function buildMenu(): array
+    {
+        return [
+            ['Dashboard', route('dashboard'), 'layout-dashboard', 'dashboard*'],
+            ['Profil Saya', route('profile'), 'user', 'profile*|profil*'],
+            ['Cari Tim', route('recruitment.index'), 'users', '*find-teams*|*cari-tim*|*filter-rekrutmen*'],
+            ['Kelola Tim', route('tim.index'), 'users-round', 'my-teams*'],
+            ['Pusat Lomba', route('competition.index'), 'trophy', 'find-competitions*|lomba*'],
+            ['Susunan Portofolio', route('portofolio.index'), 'briefcase', 'susunan-portofolio*'],
+            ['Pesan', route('messages.index'), 'message-circle', 'messages*'],
+            ['Notifikasi', route('notifications'), 'bell', 'notifications*'],
+        ];
     }
 
     /**

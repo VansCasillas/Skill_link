@@ -29,12 +29,13 @@
 .sp-page {
     background: #CBDDF5;
     min-height: calc(100vh - 142px);
-    padding: 40px 0 60px;
+    padding: 28px 20px 48px;
 }
 
 /* Main container */
 .sp-main {
-    width: 1136px;
+    width: 100%;
+    max-width: 1136px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -805,7 +806,11 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 
                         {{-- Thumbnail --}}
                         <div class="porto-thumb" style="background:{{ $p['warna'] }};">
-                            {{ $p['inisial'] }}
+                            @if (!empty($p['bukti_url']))
+                                <img src="{{ $p['bukti_url'] }}" alt="Bukti {{ $p['judul'] }}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
+                            @else
+                                {{ $p['inisial'] }}
+                            @endif
                         </div>
 
                         {{-- Content --}}
@@ -813,6 +818,9 @@ textarea.form-control { resize: vertical; min-height: 80px; }
                             <div class="porto-title-row">
                                 <p class="porto-title">{{ $p['judul'] }}</p>
                                 <span class="chip chip-{{ strtolower($p['tipe']) }}">{{ $p['tipe'] }}</span>
+                                <span class="chip" style="background:{{ $p['status'] === 'approved' ? '#DCFCE7' : ($p['status'] === 'rejected' ? '#FEE2E2' : '#FEF3C7') }};color:{{ $p['status'] === 'approved' ? '#166534' : ($p['status'] === 'rejected' ? '#991B1B' : '#92400E') }}">
+                                    {{ $p['status'] === 'approved' ? 'Divalidasi' : ($p['status'] === 'rejected' ? 'Ditolak' : 'Menunggu validasi') }}
+                                </span>
                             </div>
                             <p class="porto-desc">{{ $p['deskripsi'] }}</p>
                             <div class="porto-tags">
@@ -918,7 +926,7 @@ textarea.form-control { resize: vertical; min-height: 80px; }
     <div class="sp-modal">
         <button class="modal-close" onclick="closeTambah()">×</button>
         <h2 class="modal-title">Tambah Portofolio</h2>
-        <form method="POST" action="{{ route('portofolio.store') }}" id="form-tambah">
+        <form method="POST" action="{{ route('portofolio.store') }}" id="form-tambah" enctype="multipart/form-data">
             @csrf
 
             <div class="form-group">
@@ -947,6 +955,12 @@ textarea.form-control { resize: vertical; min-height: 80px; }
             <div class="form-group">
                 <label class="form-label">Tags <small style="font-weight:400;color:#94A3B8;">(pisahkan dengan koma)</small></label>
                 <input type="text" name="tags" class="form-control" placeholder="cth. Flutter, Firebase, UI/UX">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Foto Bukti <span class="req">*</span></label>
+                <input type="file" name="bukti" class="form-control" accept="image/jpeg,image/png,image/webp" required>
+                <small style="color:#64748B;">Unggah sertifikat, piagam, tangkapan proyek, atau bukti prestasi (maks. 5 MB).</small>
             </div>
 
             <div class="form-group">
@@ -980,7 +994,7 @@ textarea.form-control { resize: vertical; min-height: 80px; }
     <div class="sp-modal">
         <button class="modal-close" onclick="closeEdit()">×</button>
         <h2 class="modal-title">Edit Portofolio</h2>
-        <form method="POST" id="form-edit" action="">
+        <form method="POST" id="form-edit" action="" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -1010,6 +1024,12 @@ textarea.form-control { resize: vertical; min-height: 80px; }
             <div class="form-group">
                 <label class="form-label">Tags <small style="font-weight:400;color:#94A3B8;">(pisahkan dengan koma)</small></label>
                 <input type="text" name="tags" id="edit-tags" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Foto Bukti Baru</label>
+                <input type="file" name="bukti" class="form-control" accept="image/jpeg,image/png,image/webp">
+                <small style="color:#64748B;">Kosongkan jika bukti lama masih berlaku.</small>
             </div>
 
             <div class="form-group">

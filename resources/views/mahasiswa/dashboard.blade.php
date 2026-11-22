@@ -7,7 +7,7 @@
             <h1>Beranda</h1>
             <p>Selamat datang kembali, {{ $user['name'] }}. Ini ringkasan aktivitas Anda hari ini.</p>
         </div>
-        <a class="btn primary" href="{{ url('/tim/buat') }}">+ Buat Tim Lomba</a>
+        <a class="btn primary" href="{{ route('recruitment.index', ['buat' => 1]) }}">+ Buat Tim Lomba</a>
     </div>
 
     <section class="banner">
@@ -96,7 +96,7 @@
                     <div class="lab"><span>Kelengkapan profil</span><b>{{ $stats['profil'] ?? 0 }}%</b></div>
                     <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $stats['profil'] ?? 0 }}"><i style="width:{{ $stats['profil'] ?? 0 }}%"></i></div>
                 </div>
-                <a class="btn primary block" href="{{ url('/profil') }}">Lengkapi Profil</a>
+                <a class="btn primary block" href="{{ route('profil.edit') }}">Lengkapi Profil</a>
             </section>
 
             <section class="card">

@@ -1028,26 +1028,27 @@
             <h2 id="modal-create-title">Buat Tim Baru</h2>
             <button class="ct-modal-close" type="button" id="close-modal-create" aria-label="Tutup modal">&times;</button>
         </div>
-        <form id="form-create-team" onsubmit="event.preventDefault(); handleCreateTeam();" style="display: flex; flex-direction: column; gap: 12px;">
+        <form id="form-create-team" method="POST" action="{{ route('teams.store') }}" style="display: flex; flex-direction: column; gap: 12px;">
+            @csrf
             <div style="display: flex; flex-direction: column; gap: 4px;">
                 <label style="font-size: 12px; font-weight: 500; color: #0F172A;" for="create-nama">Nama Tim</label>
                 <input style="height: 38px; border: 1px solid #0A87D9; border-radius: 10px; padding: 0 12px; font-family: inherit; font-size: 13px;"
-                       id="create-nama" required placeholder="Contoh: Tim Garuda Code">
+                       id="create-nama" name="name" required maxlength="200" placeholder="Contoh: Tim Garuda Code">
             </div>
             <div style="display: flex; flex-direction: column; gap: 4px;">
                 <label style="font-size: 12px; font-weight: 500; color: #0F172A;" for="create-lomba">Lomba / Kompetisi</label>
                 <input style="height: 38px; border: 1px solid #0A87D9; border-radius: 10px; padding: 0 12px; font-family: inherit; font-size: 13px;"
-                       id="create-lomba" required placeholder="Contoh: Gemastik 2026 - PPL">
+                       id="create-lomba" name="competition" required maxlength="200" placeholder="Contoh: Gemastik 2026 - PPL">
             </div>
             <div style="display: flex; flex-direction: column; gap: 4px;">
                 <label style="font-size: 12px; font-weight: 500; color: #0F172A;" for="create-desc">Deskripsi & Peran yang Dicari</label>
                 <textarea style="height: 70px; border: 1px solid #0A87D9; border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 13px; resize: none;"
-                          id="create-desc" required placeholder="Jelaskan tujuan tim dan skill anggota yang dicari..."></textarea>
+                          id="create-desc" name="description" required maxlength="1000" placeholder="Jelaskan tujuan tim dan skill anggota yang dicari..."></textarea>
             </div>
             <div style="display: flex; flex-direction: column; gap: 4px;">
                 <label style="font-size: 12px; font-weight: 500; color: #0F172A;" for="create-skills">Skill yang Dibutuhkan (pisahkan koma)</label>
                 <input style="height: 38px; border: 1px solid #0A87D9; border-radius: 10px; padding: 0 12px; font-family: inherit; font-size: 13px;"
-                       id="create-skills" placeholder="Contoh: Flutter, UI/UX, Backend">
+                       id="create-skills" name="skills" maxlength="500" placeholder="Contoh: Flutter, UI/UX, Backend">
             </div>
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
                 <button class="ct-btn-detail" type="button" id="btn-cancel-create">Batal</button>
@@ -1167,9 +1168,22 @@
         document.querySelectorAll('.ct-btn-join').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var teamName = btn.getAttribute('data-team-name') || 'tim';
-                btn.classList.add('joined');
-                btn.textContent = 'Diajukan ✓';
-                showToast('Permintaan bergabung ke ' + teamName + ' berhasil dikirim!');
+                var teamId = btn.getAttribute('data-join-id');
+                fetch(@json(url('/teams')) + '/' + teamId + '/join', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }).then(function (response) {
+                    if (!response.ok) throw new Error();
+                    btn.classList.add('joined');
+                    btn.textContent = 'Diajukan ✓';
+                    showToast('Permintaan bergabung ke ' + teamName + ' berhasil dikirim!');
+                }).catch(function () {
+                    showToast('Permintaan bergabung gagal dikirim.', 'error');
+                });
             });
         });
 
@@ -1222,12 +1236,24 @@
             joinActionBtn.addEventListener('click', function () {
                 modalDetail.classList.remove('open');
                 if (currentDetailTeam) {
-                    showToast('Permintaan bergabung ke ' + currentDetailTeam.nama + ' berhasil dikirim!');
                     var cardBtn = document.querySelector('.ct-btn-join[data-join-id="' + currentDetailTeam.id + '"]');
-                    if (cardBtn) {
-                        cardBtn.classList.add('joined');
-                        cardBtn.textContent = 'Diajukan ✓';
-                    }
+                    fetch(@json(url('/teams')) + '/' + currentDetailTeam.id + '/join', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    }).then(function (response) {
+                        if (!response.ok) throw new Error();
+                        showToast('Permintaan bergabung ke ' + currentDetailTeam.nama + ' berhasil dikirim!');
+                        if (cardBtn) {
+                            cardBtn.classList.add('joined');
+                            cardBtn.textContent = 'Diajukan ✓';
+                        }
+                    }).catch(function () {
+                        showToast('Permintaan bergabung gagal dikirim.', 'error');
+                    });
                 }
             });
         }
@@ -1244,15 +1270,12 @@
             });
         }
 
+        @if (request('buat') === '1')
+            modalCreate.classList.add('open');
+        @endif
+
         if (closeCreate) closeCreate.addEventListener('click', function () { modalCreate.classList.remove('open'); });
         if (cancelCreate) cancelCreate.addEventListener('click', function () { modalCreate.classList.remove('open'); });
-
-        window.handleCreateTeam = function () {
-            var nama   = document.getElementById('create-nama').value;
-            modalCreate.classList.remove('open');
-            document.getElementById('form-create-team').reset();
-            showToast('Tim "' + nama + '" berhasil dibuat & rekrutmen dipublikasikan!');
-        };
 
         // Close on escape
         document.addEventListener('keydown', function (e) {

@@ -196,6 +196,13 @@
             padding: 0
         }
 
+        a.icon-btn {
+            display: grid;
+            place-items: center;
+            color: var(--ink);
+            text-decoration: none
+        }
+
         .icon-btn .dot {
             position: absolute;
             top: 5px;
@@ -210,7 +217,12 @@
         .me {
             display: flex;
             align-items: center;
-            gap: 8px
+            gap: 8px;
+            color: inherit
+        }
+
+        a.me {
+            text-decoration: none
         }
 
         .avatar {
@@ -888,7 +900,12 @@
                     @endif
                 @endforeach
             </form>
-        @else
+        @elseif (request()->routeIs('competition.index'))
+            <form class="search" method="GET" action="{{ route('competition.index') }}" role="search">
+                <i data-lucide="search" class="i" aria-hidden="true"></i>
+                <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari lomba atau penyelenggara..." aria-label="Cari lomba">
+            </form>
+        @elseif (! request()->routeIs('portofolio.index'))
             <label class="search">
                 <i data-lucide="search" class="i" aria-hidden="true"></i>
                 <input type="search" placeholder="Cari lomba, tim, atau skill..." aria-label="Cari">
@@ -896,11 +913,26 @@
         @endif
 
         <div class="tb-right">
-            <button class="icon-btn" type="button" aria-label="Notifikasi">
-                <i data-lucide="bell" class="i" aria-hidden="true"></i>
-                @if(!empty($notifs))<span class="dot"></span>@endif
-            </button>
-            <div class="me">
+            @if (auth()->user()?->role === 'mahasiswa')
+                <a class="icon-btn" href="{{ route('notifications') }}" aria-label="Buka halaman Notifikasi" title="Notifikasi">
+                    <i data-lucide="bell" class="i" aria-hidden="true"></i>
+                    @if(!empty($notifs))<span class="dot"></span>@endif
+                </a>
+                <a class="me" href="{{ route('profile') }}" aria-label="Buka halaman Profil" title="Profil">
+                    <span class="avatar" aria-hidden="true">
+                        {{ $user['inisial'] ?? mb_strtoupper(mb_substr($user['name'], 0, 1)) }}
+                    </span>
+                    <span class="me-text">
+                        <span class="me-name">{{ $user['name'] }}</span>
+                        <span class="me-sub">{{ $user['subline'] ?? (($user['prodi'] ?? 'TRPL') . ' · Angkatan ' . ($user['angkatan'] ?? '')) }}</span>
+                    </span>
+                </a>
+            @else
+                <button class="icon-btn" type="button" aria-label="Notifikasi">
+                    <i data-lucide="bell" class="i" aria-hidden="true"></i>
+                    @if(!empty($notifs))<span class="dot"></span>@endif
+                </button>
+                <div class="me">
                 <span class="avatar" aria-hidden="true">
                     <i data-lucide="user" class="i" style="width:20px;height:20px"></i>
                 </span>
@@ -908,7 +940,8 @@
                     <span class="me-name">{{ $user['name'] }}</span>
                     <span class="me-sub">{{ $user['subline'] ?? (($user['prodi'] ?? 'TRPL') . ' · Angkatan ' . ($user['angkatan'] ?? '')) }}</span>
                 </span>
-            </div>
+                </div>
+            @endif
         </div>
     </header>
 

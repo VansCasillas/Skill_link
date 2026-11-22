@@ -201,6 +201,7 @@ class CompetitionController extends Controller
     {
         return [
             ['Kelola Pusat Lomba', route('competition.manage.index'), 'trophy', 'admin/kelola-pusat-informasi*'],
+            ['Validasi Portofolio', route('portfolio.validation.index'), 'badge-check', 'admin/validasi-portofolio*'],
         ];
     }
 

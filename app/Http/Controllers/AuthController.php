@@ -37,7 +37,7 @@ class AuthController extends Controller
                 ? route('competition.manage.index')
                 : route('dashboard');
 
-            return redirect()->intended($destination);
+            return redirect()->to($destination);
         }
 
         return back()
