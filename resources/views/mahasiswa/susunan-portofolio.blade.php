@@ -83,11 +83,12 @@
 
 /* Stats row */
 .sp-stats {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 24px;
 }
 .stat-card {
-    flex: 1;
+    min-height: 100px;
     display: flex;
     align-items: center;
     padding: 16px 20px;
@@ -204,6 +205,11 @@
 }
 .porto-card:hover { box-shadow: 0 4px 16px rgba(37,99,235,0.12); }
 .porto-card.dragging { opacity: 0.5; cursor: grabbing; }
+#porto-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
 .porto-num {
     width: 28px; height: 28px;
@@ -707,6 +713,16 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 @media (max-width: 1200px) {
     .sp-main { width: 95%; }
 }
+@media (max-width: 760px) {
+    .sp-stats { grid-template-columns: 1fr; gap: 12px; }
+    .sp-header { align-items: flex-start; gap: 12px; }
+    .sp-tabs { align-items: flex-start; flex-direction: column; gap: 12px; }
+    .tab-pills { max-width: 100%; overflow-x: auto; }
+    .porto-card { display: grid; grid-template-columns: 28px 56px minmax(0, 1fr); }
+    .porto-body { grid-column: 2 / -1; }
+    .porto-num { grid-row: 1; }
+    .porto-thumb { grid-row: 1; }
+}
 @media (max-width: 900px) {
     .sp-hero-title { font-size: 36px; }
     .sp-body { flex-direction: column; }
@@ -1145,9 +1161,25 @@ function toggleItem(id, checkbox) {
 
 /* Update preview sidebar dinamis */
 function updatePreviewSidebar() {
-    // Re-fetch halaman tidak diperlukan — preview hanya kosmetik di sini;
-    // reload full page untuk akurasi:
-    // Anda bisa ganti ini dengan AJAX jika diperlukan
+    const previewList = document.getElementById('preview-list');
+    if (! previewList) return;
+
+    const visibleCards = Array.from(document.querySelectorAll('.porto-card'))
+        .filter(card => document.getElementById('toggle-' + card.dataset.id)?.checked)
+        .slice(0, 3);
+
+    previewList.innerHTML = visibleCards.length
+        ? visibleCards.map(card => {
+            const title = card.querySelector('.porto-title')?.textContent || '';
+            const color = getComputedStyle(card.querySelector('.porto-thumb')).backgroundColor;
+            return '<li class="preview-item"><div class="preview-dot" style="background:' + color + '"></div><span class="preview-item-name"></span></li>';
+        }).join('')
+        : '<li style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:12px;color:#94A3B8;text-align:center;padding:16px 0;">Belum ada portofolio ditampilkan.</li>';
+
+    Array.from(previewList.querySelectorAll('.preview-item')).forEach((item, index) => {
+        item.querySelector('.preview-item-name').textContent =
+            visibleCards[index].querySelector('.porto-title')?.textContent || '';
+    });
 }
 
 /* ══════════════════════════════════════════════════════

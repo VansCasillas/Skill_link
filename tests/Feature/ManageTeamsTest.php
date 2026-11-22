@@ -68,4 +68,37 @@ class ManageTeamsTest extends TestCase
             'members_count' => 1,
         ]);
     }
+
+    public function test_owner_can_open_team_detail_with_members_and_join_requests(): void
+    {
+        $owner = User::factory()->create(['role' => 'mahasiswa', 'name' => 'Ketua Uji']);
+        $member = User::factory()->create(['role' => 'mahasiswa', 'name' => 'Anggota Uji']);
+        $applicant = User::factory()->create(['role' => 'mahasiswa', 'name' => 'Pendaftar Uji']);
+        $team = Team::create([
+            'owner_id' => $owner->id,
+            'name' => 'Tim Detail',
+            'competition' => 'Gemastik',
+            'capacity' => 4,
+            'members_count' => 2,
+        ]);
+
+        TeamJoinRequest::create([
+            'team_id' => $team->id,
+            'user_id' => $member->id,
+            'status' => 'approved',
+        ]);
+        TeamJoinRequest::create([
+            'team_id' => $team->id,
+            'user_id' => $applicant->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('teams.detail', $team))
+            ->assertOk()
+            ->assertSee('Tim Detail')
+            ->assertSee('Anggota Uji')
+            ->assertSee('Pendaftar Uji')
+            ->assertSee('Edit Tim');
+    }
 }

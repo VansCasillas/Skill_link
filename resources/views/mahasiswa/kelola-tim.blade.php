@@ -369,7 +369,7 @@
                                 Edit Tim
                             </button>
                         @endif
-                        <a class="manage-team-detail" href="{{ route('messages.index', ['team' => $team['id']]) }}">Lihat Detail</a>
+                        <a class="manage-team-detail" href="{{ route('teams.detail', $team['id']) }}">Lihat Detail</a>
                     </div>
                 </article>
             @empty

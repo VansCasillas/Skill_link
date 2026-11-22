@@ -15,7 +15,7 @@ class PortofolioController extends Controller
     private function buildMenu(): array
     {
         return [
-            ['Dashboard',           route('dashboard'),           'layout-dashboard', 'dashboard*'],
+            ['Beranda',             route('dashboard'),           'layout-dashboard', 'dashboard*'],
             ['Profil Saya',         route('profile'),             'user',             'profile*'],
             ['Cari Tim',            route('recruitment.index'),   'users',            '*find-teams*|*cari-tim*|*filter-rekrutmen*'],
             ['Kelola Tim',          route('tim.index'),           'users-round',      'my-teams*'],

@@ -37,7 +37,7 @@ class CariTimController extends Controller
         }
 
         $menu = [
-            ['Dashboard', route('dashboard'), 'layout-dashboard', 'dashboard*'],
+            ['Beranda', route('dashboard'), 'layout-dashboard', 'dashboard*'],
             ['Profil Saya', route('profile'), 'user', 'profile*'],
             ['Cari Tim', route('recruitment.index'), 'users', '*find-teams*|*cari-tim*'],
             ['Kelola Tim', route('tim.index'), 'users-round', 'my-teams*'],
@@ -173,7 +173,7 @@ class CariTimController extends Controller
         $u = $request->user();
 
         $menu = [
-            ['Dashboard',    route('dashboard'),          'layout-dashboard', 'dashboard*'],
+            ['Beranda',      route('dashboard'),          'layout-dashboard', 'dashboard*'],
             ['Profil Saya',  route('profile'),            'user',             'profile*'],
             ['Cari Tim',     route('recruitment.index'),  'users',            '*find-teams*|*cari-tim*|*filter-rekrutmen*'],
             ['Kelola Tim',   route('tim.index'),          'users-round',      'my-teams*'],

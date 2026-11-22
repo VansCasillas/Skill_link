@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Competition;
+use App\Models\Team;
+use App\Models\TeamJoinRequest;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -14,13 +16,14 @@ class DashboardController extends Controller
     {
         $u = $request->user();
         $menu = [
-            ['Dashboard', route('dashboard'), 'layout-dashboard', 'dashboard'],
-            ['Profile', route('profile'), 'user', 'profile'],
-            ['Find Teams', route('recruitment.index'), 'users', ['find-teams*', 'cari-tim*', 'recruitment*']],
+            ['Beranda', route('dashboard'), 'layout-dashboard', 'dashboard*'],
+            ['Profil Saya', route('profile'), 'user', 'profile*|profil*'],
+            ['Cari Tim', route('recruitment.index'), 'users', ['find-teams*', 'cari-tim*', 'recruitment*']],
+            ['Kelola Tim', route('tim.index'), 'users-round', 'my-teams*'],
             ['Pusat Lomba', route('competition.index'), 'trophy', 'find-competitions*'],
             ['Susunan Portofolio', route('portofolio.index'), 'briefcase', 'susunan-portofolio*'],
-            ['Messages', route('messages.index'), 'message-circle', 'messages*'],
-            ['Notifications', route('notifications'), 'bell', 'notifications*'],
+            ['Pesan', route('messages.index'), 'message-circle', 'messages*'],
+            ['Notifikasi', route('notifications'), 'bell', 'notifications*'],
         ];
 
         $competitions = Competition::query()
@@ -47,8 +50,12 @@ class DashboardController extends Controller
             // Ganti dengan query ke database, misalnya $u->teams()->count()
             'stats' => [
                 'lomba_aktif' => $competitions->count(),
-                'tim_saya' => 0,
-                'undangan' => 0,
+                'tim_saya' => Team::where('owner_id', $u->id)
+                    ->orWhereHas('joinRequests', fn ($query) => $query
+                        ->where('user_id', $u->id)
+                        ->where('status', 'approved'))
+                    ->count(),
+                'undangan' => TeamJoinRequest::where('user_id', $u->id)->where('status', 'pending')->count(),
                 'profil' => $profilePercent,
             ],
 

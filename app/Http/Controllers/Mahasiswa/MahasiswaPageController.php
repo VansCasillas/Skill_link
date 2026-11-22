@@ -100,6 +100,25 @@ class MahasiswaPageController extends Controller
         ]));
     }
 
+    public function teamDetail(Request $request, Team $team): View
+    {
+        if ($team->owner_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        $joinRequests = TeamJoinRequest::with('user')
+            ->where('team_id', $team->id)
+            ->latest()
+            ->get();
+
+        return view('mahasiswa.detail-tim', $this->pageData($request, [
+            'team' => $team,
+            'joinRequests' => $joinRequests,
+            'approvedMembers' => $joinRequests->where('status', 'approved')->values(),
+            'pendingMembers' => $joinRequests->where('status', 'pending')->values(),
+        ]));
+    }
+
     public function updateTeam(Request $request, Team $team): RedirectResponse
     {
         if ($team->owner_id !== $request->user()->id) {
@@ -262,10 +281,10 @@ class MahasiswaPageController extends Controller
 
         return array_merge($data, [
             'menu' => [
-                ['Dashboard', route('dashboard'), 'layout-dashboard', 'dashboard*'],
+                ['Beranda', route('dashboard'), 'layout-dashboard', 'dashboard*'],
                 ['Profil Saya', route('profile'), 'user', 'profile*|profil*'],
                 ['Cari Tim', route('recruitment.index'), 'users', '*find-teams*|*cari-tim*|*filter-rekrutmen*'],
-                ['Kelola Tim', route('tim.index'), 'users-round', 'my-teams*'],
+                ['Kelola Tim', route('tim.index'), 'users-round', 'my-teams*|teams/*/detail'],
                 ['Pusat Lomba', route('competition.index'), 'trophy', 'find-competitions*|lomba*'],
                 ['Susunan Portofolio', route('portofolio.index'), 'briefcase', 'susunan-portofolio*'],
                 ['Pesan', route('messages.index'), 'message-circle', 'messages*'],

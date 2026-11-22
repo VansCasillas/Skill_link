@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Dashboard Mahasiswa')
+@section('title', 'Beranda Mahasiswa')
 @section('content')
 <div class="content">
     <div class="page-head">

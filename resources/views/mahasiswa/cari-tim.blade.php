@@ -851,8 +851,18 @@
             <input type="text"
                    id="ct-search-input"
                    value="{{ request('q') }}"
+                   list="ct-search-suggestions"
                    placeholder="Cari nama tim, lomba, atau skill..."
                    aria-label="Cari nama tim, lomba, atau skill">
+            <datalist id="ct-search-suggestions">
+                @foreach ($teams as $team)
+                    <option value="{{ $team['nama'] }}"></option>
+                    <option value="{{ $team['lomba'] }}"></option>
+                    @foreach ($team['skills'] as $skill)
+                        <option value="{{ $skill }}"></option>
+                    @endforeach
+                @endforeach
+            </datalist>
         </div>
 
         <div class="ct-sort-box">
