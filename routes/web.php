@@ -68,6 +68,8 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
     Route::get('/filter-rekrutmen', [CariTimController::class, 'filterRekrutmen'])->name('filter-rekrutmen');
     Route::get('/my-teams', [MahasiswaPageController::class, 'teams'])->name('tim.index');
     Route::post('/teams', [MahasiswaPageController::class, 'createTeam'])->name('teams.store');
+    Route::put('/teams/{team}', [MahasiswaPageController::class, 'updateTeam'])->name('teams.update');
+    Route::delete('/teams/{team}/members/{joinRequest}', [MahasiswaPageController::class, 'removeMember'])->name('teams.members.remove');
     Route::post('/teams/{team}/join', function (Request $request, Team $team) {
         $user = $request->user();
         if ($team->owner_id === $user->id) {

@@ -41,7 +41,7 @@ class MahasiswaPageController extends Controller
     {
         $user = $request->user();
         $search = mb_strtolower(trim((string) $request->query('q', '')));
-        $ownedTeam = Team::firstOrCreate(
+        Team::firstOrCreate(
             ['name' => 'Tim Garuda Code'],
             [
                 'owner_id' => $user->id,
@@ -68,11 +68,22 @@ class MahasiswaPageController extends Controller
                 'id' => $team->id,
                 'name' => $team->name,
                 'competition' => $team->competition,
+                'description' => $team->description,
                 'role' => $team->owner_id === $user->id ? 'Ketua' : 'Anggota',
                 'members' => $team->members_count,
                 'capacity' => $team->capacity,
                 'skills' => $team->skills ?? [],
                 'status' => $team->owner_id === $user->id ? 'Dibuka' : 'Aktif',
+                'approved_members' => $team->joinRequests()
+                    ->with('user')
+                    ->where('status', 'approved')
+                    ->get()
+                    ->map(fn (TeamJoinRequest $joinRequest): array => [
+                        'id' => $joinRequest->id,
+                        'user_id' => $joinRequest->user_id,
+                        'name' => $joinRequest->user->name,
+                    ])
+                    ->all(),
             ];
         })->all();
 
@@ -87,6 +98,53 @@ class MahasiswaPageController extends Controller
             'teams' => $teams,
             'joinRequests' => $joinRequests,
         ]));
+    }
+
+    public function updateTeam(Request $request, Team $team): RedirectResponse
+    {
+        if ($team->owner_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:200'],
+            'competition' => ['required', 'string', 'max:200'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'skills' => ['nullable', 'string', 'max:500'],
+            'capacity' => ['required', 'integer', 'min:2', 'max:20'],
+        ]);
+
+        $skills = array_values(array_filter(array_map('trim', explode(',', $validated['skills'] ?? ''))));
+
+        if ((int) $validated['capacity'] < $team->members_count) {
+            return back()->withInput()->with('error', 'Kuota tidak boleh lebih kecil dari jumlah anggota saat ini.');
+        }
+
+        $team->update([
+            'name' => $validated['name'],
+            'competition' => $validated['competition'],
+            'description' => $validated['description'] ?? null,
+            'skills' => $skills,
+            'capacity' => $validated['capacity'],
+        ]);
+
+        return back()->with('success', 'Informasi tim berhasil diperbarui.');
+    }
+
+    public function removeMember(Request $request, Team $team, TeamJoinRequest $joinRequest): RedirectResponse
+    {
+        if ($team->owner_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        if ($joinRequest->team_id !== $team->id || $joinRequest->status !== 'approved') {
+            return back()->with('error', 'Anggota tidak ditemukan di tim ini.');
+        }
+
+        $joinRequest->delete();
+        $team->decrement('members_count');
+
+        return back()->with('success', 'Anggota berhasil dikeluarkan dari tim.');
     }
 
     public function approveJoinRequest(Request $request, TeamJoinRequest $joinRequest): RedirectResponse

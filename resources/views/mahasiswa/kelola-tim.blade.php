@@ -100,6 +100,11 @@
         border-radius: 14px;
         box-shadow: 0 2px 10px rgba(10, 51, 102, .06);
     }
+    [data-team-panel="active"] {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
     .manage-team-stack {
         display: flex;
         width: 62px;
@@ -179,6 +184,114 @@
         display: flex;
         gap: 8px;
     }
+    .manage-team-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .manage-team-edit {
+        min-width: 86px;
+        min-height: 32px;
+        border: 1px solid #BFDBFE;
+        border-radius: 8px;
+        background: #EFF6FF;
+        color: #2563EB;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .manage-team-dialog {
+        width: min(520px, calc(100% - 28px));
+        border: 0;
+        border-radius: 16px;
+        padding: 0;
+        box-shadow: 0 20px 60px rgba(15, 23, 42, .25);
+    }
+    .manage-team-dialog::backdrop {
+        background: rgba(15, 23, 42, .55);
+    }
+    .manage-team-dialog-inner {
+        padding: 20px;
+    }
+    .manage-team-dialog-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+    }
+    .manage-team-dialog-header h2,
+    .manage-team-dialog-header p {
+        margin: 0;
+    }
+    .manage-team-dialog-header h2 {
+        font-size: 19px;
+    }
+    .manage-team-dialog-header p {
+        margin-top: 4px;
+        color: #64748B;
+        font-size: 11px;
+    }
+    .manage-team-dialog-close {
+        width: 32px;
+        height: 32px;
+        border: 0;
+        border-radius: 8px;
+        background: #F1F5F9;
+        color: #0F172A;
+        font-size: 18px;
+    }
+    .manage-team-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    .manage-team-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .manage-team-field.full {
+        grid-column: 1 / -1;
+    }
+    .manage-team-field label {
+        color: #334155;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .manage-team-field input,
+    .manage-team-field textarea {
+        width: 100%;
+        border: 1px solid #CBD5E1;
+        border-radius: 9px;
+        padding: 10px 12px;
+        font: inherit;
+        font-size: 12px;
+    }
+    .manage-team-field textarea {
+        min-height: 82px;
+        resize: vertical;
+    }
+    .manage-team-dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 16px;
+    }
+    .manage-member-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid #E2E8F0;
+    }
+    .manage-member-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: #334155;
+        font-size: 12px;
+    }
     @media (max-width: 760px) {
         .manage-team-stats {
             grid-template-columns: 1fr;
@@ -249,7 +362,15 @@
                     <span class="manage-team-status {{ $team['members'] >= $team['capacity'] ? 'closed' : '' }}">
                         {{ $team['members'] >= $team['capacity'] ? 'Penuh' : $team['status'] }}
                     </span>
-                    <a class="manage-team-detail" href="{{ route('messages.index', ['team' => $team['id']]) }}">Lihat Detail</a>
+                    <div class="manage-team-actions">
+                        @if ($team['role'] === 'Ketua')
+                            <button class="manage-team-edit" type="button"
+                                    data-edit-team='@json($team)'>
+                                Edit Tim
+                            </button>
+                        @endif
+                        <a class="manage-team-detail" href="{{ route('messages.index', ['team' => $team['id']]) }}">Lihat Detail</a>
+                    </div>
                 </article>
             @empty
                 <div class="manage-team-empty">Belum ada tim yang dapat ditampilkan.</div>
@@ -286,6 +407,73 @@
             <div class="manage-team-empty">Belum ada permintaan anggota yang menunggu persetujuan.</div>
         @endforelse
     </section>
+
+    @foreach ($teams as $team)
+        @if ($team['role'] === 'Ketua')
+            <dialog class="manage-team-dialog" id="manage-team-dialog-{{ $team['id'] }}" aria-labelledby="manage-team-dialog-title-{{ $team['id'] }}">
+                <div class="manage-team-dialog-inner">
+                    <div class="manage-team-dialog-header">
+                        <div>
+                            <h2 id="manage-team-dialog-title-{{ $team['id'] }}">Edit Tim</h2>
+                            <p>Ubah informasi tim atau keluarkan anggota.</p>
+                        </div>
+                        <button class="manage-team-dialog-close" type="button" data-close-team-dialog="{{ $team['id'] }}" aria-label="Tutup">&times;</button>
+                    </div>
+
+                    <form method="POST" action="{{ route('teams.update', $team['id']) }}">
+                        @csrf
+                        @method('PUT')
+                        <div class="manage-team-form-grid">
+                            <div class="manage-team-field full">
+                                <label for="team-name-{{ $team['id'] }}">Nama tim</label>
+                                <input id="team-name-{{ $team['id'] }}" name="name" value="{{ $team['name'] }}" maxlength="200" required>
+                            </div>
+                            <div class="manage-team-field">
+                                <label for="team-competition-{{ $team['id'] }}">Nama lomba</label>
+                                <input id="team-competition-{{ $team['id'] }}" name="competition" value="{{ $team['competition'] }}" maxlength="200" required>
+                            </div>
+                            <div class="manage-team-field">
+                                <label for="team-capacity-{{ $team['id'] }}">Kuota anggota</label>
+                                <input id="team-capacity-{{ $team['id'] }}" name="capacity" type="number" min="2" max="20" value="{{ $team['capacity'] }}" required>
+                            </div>
+                            <div class="manage-team-field full">
+                                <label for="team-description-{{ $team['id'] }}">Deskripsi</label>
+                                <textarea id="team-description-{{ $team['id'] }}" name="description" maxlength="1000">{{ $team['description'] }}</textarea>
+                            </div>
+                            <div class="manage-team-field full">
+                                <label for="team-skills-{{ $team['id'] }}">Skill (pisahkan dengan koma)</label>
+                                <input id="team-skills-{{ $team['id'] }}" name="skills" value="{{ implode(', ', $team['skills']) }}" maxlength="500">
+                            </div>
+                        </div>
+
+                        <div class="manage-team-dialog-actions">
+                            <button class="btn outline sm" type="button" data-close-team-dialog="{{ $team['id'] }}">Batal</button>
+                            <button class="btn primary sm" type="submit">Simpan Perubahan</button>
+                        </div>
+                    </form>
+
+                    <div class="manage-member-list">
+                        <strong style="font-size:12px;color:#334155">Anggota tim</strong>
+                        @forelse ($team['approved_members'] as $member)
+                            <div class="manage-member-row">
+                                <span>{{ $member['name'] }}</span>
+                                <form method="POST" action="{{ route('teams.members.remove', [$team['id'], $member['id']]) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn outline sm" type="submit"
+                                            onclick="return confirm('Keluarkan {{ e($member['name']) }} dari tim ini?')">
+                                        Keluarkan
+                                    </button>
+                                </form>
+                            </div>
+                        @empty
+                            <span style="color:#64748B;font-size:11px">Belum ada anggota yang disetujui.</span>
+                        @endforelse
+                    </div>
+                </div>
+            </dialog>
+        @endif
+    @endforeach
 </div>
 
 <script>
@@ -300,6 +488,33 @@
                     ? ''
                     : 'none';
             });
+        });
+    });
+
+    document.querySelectorAll('[data-edit-team]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var team = JSON.parse(button.getAttribute('data-edit-team'));
+            var dialog = document.getElementById('manage-team-dialog-' + team.id);
+            if (dialog) {
+                dialog.showModal();
+            }
+        });
+    });
+
+    document.querySelectorAll('[data-close-team-dialog]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var dialog = document.getElementById('manage-team-dialog-' + button.getAttribute('data-close-team-dialog'));
+            if (dialog) {
+                dialog.close();
+            }
+        });
+    });
+
+    document.querySelectorAll('.manage-team-dialog').forEach(function (dialog) {
+        dialog.addEventListener('click', function (event) {
+            if (event.target === dialog) {
+                dialog.close();
+            }
         });
     });
 </script>
