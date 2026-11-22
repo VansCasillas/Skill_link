@@ -37,7 +37,7 @@
     .fr-main {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
     }
 
     .fr-heading h2 {
@@ -446,6 +446,17 @@
     @media (max-width: 640px) {
         .fr-hero h1 { font-size: 26px; }
         .ta-btn { font-size: 12px; padding: 5px 10px; }
+        .fr-content,
+        .content { padding-left: 12px; padding-right: 12px; }
+        .fr-layout { gap: 16px; }
+        .fr-hero { padding: 24px 20px; min-height: 82px; }
+        .ta-top { align-items:flex-start; }
+        .ta-footer { flex-wrap: wrap; }
+        .ta-bar-wrap { flex-basis: calc(100% - 82px); }
+        .ta-btn { margin-left: auto; }
+        .fr-aside { border-radius: 14px; }
+        .flt-tags { height: 108px; }
+        .flt-tag { font-size: 11px; }
     }
 </style>
 
@@ -518,7 +529,10 @@
                     @if($isFull)
                         <button class="ta-btn penuh" disabled>Penuh</button>
                     @else
-                        <a href="#" class="ta-btn join">Gabung Tim</a>
+                        <form method="POST" action="{{ route('teams.join', $team['id']) }}" style="display:inline">
+                            @csrf
+                            <button type="submit" class="ta-btn join">Gabung Tim</button>
+                        </form>
                     @endif
                 </div>
 
@@ -633,6 +647,7 @@
 
     var articles = all('.team-article');
     var countEl  = $('#fr-count');
+    var globalSearch = $('#fr-global-search');
 
     // skill tag toggle
     all('.flt-tag').forEach(function(tag){
@@ -645,6 +660,7 @@
         var skills = all('.flt-tag.active').map(function(el){ return el.dataset.skill; });
         var status = ($('input[name="status"]:checked') || {}).value || 'semua';
         var slot   = ($('input[name="slot"]:checked')   || {}).value || 'semua';
+        var query  = ((globalSearch && globalSearch.value) || '').trim().toLowerCase();
         var visible = 0;
 
         articles.forEach(function(art){
@@ -652,15 +668,22 @@
             var artStatus = art.dataset.status || '';
             var artSisa   = parseInt(art.dataset.sisa || '0', 10);
             var artSkills = (art.dataset.skills || '').split(',');
+            var searchable = [
+                art.querySelector('.ta-name')?.textContent || '',
+                art.querySelector('.ta-cat')?.textContent || '',
+                art.dataset.kategori || '',
+                art.dataset.skills || ''
+            ].join(' ').toLowerCase();
 
             var catOk   = cats.length === 0   || cats.some(function(c){ return artKat.includes(c); });
             var skillOk = skills.length === 0  || skills.some(function(s){ return artSkills.some(function(as){ return as.includes(s) || s.includes(as); }); });
             var statusOk = status === 'semua'  || artStatus === status;
+            var searchOk = !query || searchable.includes(query);
             var slotOk   = true;
             if (slot === '1-2') slotOk = artSisa >= 1 && artSisa <= 2;
             else if (slot === '3+') slotOk = artSisa >= 3;
 
-            var show = catOk && skillOk && statusOk && slotOk;
+            var show = catOk && skillOk && statusOk && slotOk && searchOk;
             art.style.display = show ? '' : 'none';
             if (show) visible++;
         });
@@ -685,8 +708,15 @@
         var aside = $('#fr-aside');
         if(aside) aside.style.display = aside.style.display === 'none' ? '' : 'none';
     });
+    if (globalSearch) {
+        globalSearch.addEventListener('input', applyFilter);
+    }
 
-    applyFilter();
+    // Biarkan semua tim terlihat saat halaman dibuka meski Hackathon tercentang
+    // sebagai preferensi filter awal.
+    if (globalSearch && globalSearch.value) {
+        applyFilter();
+    }
 })();
 </script>
 

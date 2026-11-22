@@ -101,4 +101,16 @@ class ManageTeamsTest extends TestCase
             ->assertSee('Pendaftar Uji')
             ->assertSee('Edit Tim');
     }
+
+    public function test_student_can_open_recruitment_filter_page_and_search_teams(): void
+    {
+        $student = User::factory()->create(['role' => 'mahasiswa']);
+
+        $this->actingAs($student)
+            ->get(route('filter-rekrutmen', ['q' => 'Visioner']))
+            ->assertOk()
+            ->assertSee('Filter Rekrutmen')
+            ->assertSee('Visioner Squad')
+            ->assertDontSee('Byte Builders');
+    }
 }

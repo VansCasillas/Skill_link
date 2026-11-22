@@ -40,6 +40,7 @@ class CariTimController extends Controller
             ['Beranda', route('dashboard'), 'layout-dashboard', 'dashboard*'],
             ['Profil Saya', route('profile'), 'user', 'profile*'],
             ['Cari Tim', route('recruitment.index'), 'users', '*find-teams*|*cari-tim*'],
+            ['Filter Rekrutmen', route('filter-rekrutmen'), 'sliders-horizontal', 'filter-rekrutmen*'],
             ['Kelola Tim', route('tim.index'), 'users-round', 'my-teams*'],
             ['Pusat Lomba', route('competition.index'), 'trophy', 'find-competitions*'],
             ['Pesan', route('messages.index'), 'message-circle', 'messages*'],
@@ -171,11 +172,13 @@ class CariTimController extends Controller
     public function filterRekrutmen(Request $request)
     {
         $u = $request->user();
+        $search = mb_strtolower(trim((string) $request->query('q', '')));
 
         $menu = [
             ['Beranda',      route('dashboard'),          'layout-dashboard', 'dashboard*'],
             ['Profil Saya',  route('profile'),            'user',             'profile*'],
             ['Cari Tim',     route('recruitment.index'),  'users',            '*find-teams*|*cari-tim*|*filter-rekrutmen*'],
+            ['Filter Rekrutmen', route('filter-rekrutmen'), 'sliders-horizontal', 'filter-rekrutmen*'],
             ['Kelola Tim',   route('tim.index'),          'users-round',      'my-teams*'],
             ['Pusat Lomba',  route('competition.index'),  'trophy',           'find-competitions*'],
             ['Pesan',        route('messages.index'),     'message-circle',   'messages*'],
@@ -248,6 +251,39 @@ class CariTimController extends Controller
                 ],
             ],
         ];
+
+        foreach (['Byte Builders', 'Visioner Squad'] as $teamName) {
+            Team::firstOrCreate(
+                ['name' => $teamName],
+                [
+                    'owner_id' => $teamName === 'Byte Builders' ? $u->id : null,
+                    'competition' => $teamName === 'Byte Builders' ? 'Hackathon AI' : 'UI/UX Design',
+                    'capacity' => $teamName === 'Byte Builders' ? 5 : 3,
+                    'members_count' => 3,
+                    'skills' => $teamName === 'Byte Builders' ? ['Mobile', 'Backend', 'UI/UX'] : ['IoT', 'Frontend'],
+                ]
+            );
+        }
+
+        $teamIds = Team::whereIn('name', ['Byte Builders', 'Visioner Squad'])->pluck('id', 'name');
+        $teams = array_map(function (array $team) use ($teamIds): array {
+            $team['id'] = $teamIds->get($team['nama'], $team['id']);
+
+            return $team;
+        }, $teams);
+
+        if ($search !== '') {
+            $teams = array_values(array_filter($teams, function (array $team) use ($search): bool {
+                $searchable = mb_strtolower(implode(' ', [
+                    $team['nama'],
+                    $team['lomba'],
+                    $team['kategori'],
+                    ...$team['skills'],
+                ]));
+
+                return str_contains($searchable, $search);
+            }));
+        }
 
         return view('mahasiswa.filter-rekrutmen', compact('menu', 'user', 'teams'));
     }

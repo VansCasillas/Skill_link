@@ -284,6 +284,7 @@ class MahasiswaPageController extends Controller
                 ['Beranda', route('dashboard'), 'layout-dashboard', 'dashboard*'],
                 ['Profil Saya', route('profile'), 'user', 'profile*|profil*'],
                 ['Cari Tim', route('recruitment.index'), 'users', '*find-teams*|*cari-tim*|*filter-rekrutmen*'],
+                ['Filter Rekrutmen', route('filter-rekrutmen'), 'sliders-horizontal', 'filter-rekrutmen*'],
                 ['Kelola Tim', route('tim.index'), 'users-round', 'my-teams*|teams/*/detail'],
                 ['Pusat Lomba', route('competition.index'), 'trophy', 'find-competitions*|lomba*'],
                 ['Susunan Portofolio', route('portofolio.index'), 'briefcase', 'susunan-portofolio*'],

@@ -18,6 +18,7 @@ class PortofolioController extends Controller
             ['Beranda',             route('dashboard'),           'layout-dashboard', 'dashboard*'],
             ['Profil Saya',         route('profile'),             'user',             'profile*'],
             ['Cari Tim',            route('recruitment.index'),   'users',            '*find-teams*|*cari-tim*|*filter-rekrutmen*'],
+            ['Filter Rekrutmen',    route('filter-rekrutmen'),   'sliders-horizontal', 'filter-rekrutmen*'],
             ['Kelola Tim',          route('tim.index'),           'users-round',      'my-teams*'],
             ['Pusat Lomba',         route('competition.index'),   'trophy',           'find-competitions*'],
             ['Susunan Portofolio',  route('portofolio.index'),    'briefcase',        'susunan-portofolio*'],

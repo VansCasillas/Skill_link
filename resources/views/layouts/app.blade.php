@@ -910,6 +910,11 @@
                 <i data-lucide="search" class="i" aria-hidden="true"></i>
                 <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari nama tim, lomba, atau skill..." aria-label="Cari nama tim, lomba, atau skill">
             </form>
+        @elseif (request()->routeIs('filter-rekrutmen'))
+            <form class="search" method="GET" action="{{ route('filter-rekrutmen') }}" role="search">
+                <i data-lucide="search" class="i" aria-hidden="true"></i>
+                <input type="search" id="fr-global-search" name="q" value="{{ request('q') }}" placeholder="Cari lomba, tim, atau skill..." aria-label="Cari lomba, tim, atau skill">
+            </form>
         @elseif (request()->routeIs('tim.index'))
             <form class="search" method="GET" action="{{ route('tim.index') }}" role="search">
                 <i data-lucide="search" class="i" aria-hidden="true"></i>
