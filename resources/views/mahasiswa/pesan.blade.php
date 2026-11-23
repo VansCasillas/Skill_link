@@ -64,7 +64,7 @@
     @else
         <section class="card">
             <h2>Belum ada tim untuk dikirim pesan</h2>
-            <p>Buat atau bergabung dengan tim terlebih dahulu melalui menu Cari Tim atau Kelola Tim.</p>
+            <p>Buat atau bergabung dengan tim terlebih dahulu melalui menu Pencarian atau Kelola Tim.</p>
             <a class="btn primary" href="{{ route('recruitment.index') }}">Cari Tim</a>
         </section>
     @endif

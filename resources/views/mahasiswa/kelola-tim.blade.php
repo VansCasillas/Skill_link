@@ -8,7 +8,9 @@
         display: flex;
         flex-direction: column;
         gap: 18px;
+        width: 100%;
         max-width: 1136px;
+        margin: 0 auto;
     }
     .manage-team-heading h1 {
         margin: 0;
@@ -349,8 +351,13 @@
             @forelse ($teams as $team)
                 <article class="manage-team-card">
                     <div class="manage-team-stack" aria-label="{{ $team['members'] }} anggota">
-                        @foreach (array_slice(['A', 'C', 'D', 'T'], 0, min(4, $team['members'])) as $index => $initial)
-                            <span class="manage-team-avatar" style="background: {{ ['#F97316', '#22C55E', '#3B82F6', '#14B8A6'][$index] }};">
+                        @php
+                            $colors = ['#F97316', '#22C55E', '#3B82F6', '#14B8A6', '#8B5CF6', '#EC4899'];
+                            $stackInitials = !empty($team['initials']) ? $team['initials'] : ['A', 'C', 'D'];
+                            $displayInitials = array_slice($stackInitials, 0, min(5, max(1, (int) $team['members'])));
+                        @endphp
+                        @foreach ($displayInitials as $index => $initial)
+                            <span class="manage-team-avatar" style="background: {{ $colors[$index % count($colors)] }};">
                                 {{ $initial }}
                             </span>
                         @endforeach

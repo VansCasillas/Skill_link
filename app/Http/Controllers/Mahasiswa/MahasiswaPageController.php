@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Models\TeamJoinRequest;
 use App\Models\TeamMessage;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -46,10 +48,15 @@ class MahasiswaPageController extends Controller
             [
                 'owner_id' => $user->id,
                 'competition' => 'Gemastik 2026',
-                'capacity' => 4,
+                'capacity' => 5,
                 'members_count' => 3,
             ]
         );
+
+        $ownedTeams = Team::where('owner_id', $user->id)->get();
+        foreach ($ownedTeams as $ownedTeam) {
+            $this->seedDemoTeamData($ownedTeam);
+        }
 
         $teamsQuery = Team::where(function ($query) use ($user): void {
             $query->where('owner_id', $user->id)
@@ -64,6 +71,15 @@ class MahasiswaPageController extends Controller
         }
 
         $teams = $teamsQuery->get()->map(function (Team $team) use ($user): array {
+            $approved = $team->joinRequests()
+                ->with('user')
+                ->where('status', 'approved')
+                ->get();
+
+            $initials = collect([$team->owner ? mb_strtoupper(mb_substr($team->owner->name, 0, 1)) : 'A'])
+                ->concat($approved->map(fn ($r): string => mb_strtoupper(mb_substr($r->user->name, 0, 1))))
+                ->all();
+
             return [
                 'id' => $team->id,
                 'name' => $team->name,
@@ -74,16 +90,12 @@ class MahasiswaPageController extends Controller
                 'capacity' => $team->capacity,
                 'skills' => $team->skills ?? [],
                 'status' => $team->owner_id === $user->id ? 'Dibuka' : 'Aktif',
-                'approved_members' => $team->joinRequests()
-                    ->with('user')
-                    ->where('status', 'approved')
-                    ->get()
-                    ->map(fn (TeamJoinRequest $joinRequest): array => [
-                        'id' => $joinRequest->id,
-                        'user_id' => $joinRequest->user_id,
-                        'name' => $joinRequest->user->name,
-                    ])
-                    ->all(),
+                'initials' => $initials,
+                'approved_members' => $approved->map(fn (TeamJoinRequest $joinRequest): array => [
+                    'id' => $joinRequest->id,
+                    'user_id' => $joinRequest->user_id,
+                    'name' => $joinRequest->user->name,
+                ])->all(),
             ];
         })->all();
 
@@ -106,6 +118,8 @@ class MahasiswaPageController extends Controller
             abort(403);
         }
 
+        $this->seedDemoTeamData($team);
+
         $joinRequests = TeamJoinRequest::with('user')
             ->where('team_id', $team->id)
             ->latest()
@@ -117,6 +131,82 @@ class MahasiswaPageController extends Controller
             'approvedMembers' => $joinRequests->where('status', 'approved')->values(),
             'pendingMembers' => $joinRequests->where('status', 'pending')->values(),
         ]));
+    }
+
+    public function syncStats(Request $request, Team $team): JsonResponse
+    {
+        if ($team->owner_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'members_count' => ['nullable', 'integer', 'min:1', 'max:50'],
+            'capacity' => ['nullable', 'integer', 'min:1', 'max:50'],
+        ]);
+
+        if (isset($validated['members_count'])) {
+            $team->members_count = $validated['members_count'];
+        }
+        if (isset($validated['capacity'])) {
+            $team->capacity = $validated['capacity'];
+        }
+        $team->save();
+
+        return response()->json([
+            'success' => true,
+            'members_count' => $team->members_count,
+            'capacity' => $team->capacity,
+        ]);
+    }
+
+    private function seedDemoTeamData(Team $team): void
+    {
+        if (app()->environment('testing')) {
+            return;
+        }
+
+        if ($team->joinRequests()->count() > 0) {
+            return;
+        }
+
+        if (! in_array($team->name, ['Byte Builders', 'Tim Garuda Code'], true)) {
+            return;
+        }
+
+        $demoUsers = [
+            ['name' => 'Nadia Kusuma', 'email' => 'nadia.kusuma@student.ac.id', 'status' => 'approved'],
+            ['name' => 'Bima Aditya', 'email' => 'bima.aditya@student.ac.id', 'status' => 'approved'],
+            ['name' => 'Rina Maharani', 'email' => 'rina.maharani@student.ac.id', 'status' => 'pending'],
+            ['name' => 'Dimas Saputra', 'email' => 'dimas.saputra@student.ac.id', 'status' => 'pending'],
+            ['name' => 'Salsa Putri', 'email' => 'salsa.putri@student.ac.id', 'status' => 'pending'],
+            ['name' => 'Farhan Ramadhan', 'email' => 'farhan.ramadhan@student.ac.id', 'status' => 'pending'],
+            ['name' => 'Alya Safira', 'email' => 'alya.safira@student.ac.id', 'status' => 'pending'],
+        ];
+
+        foreach ($demoUsers as $demo) {
+            $u = User::firstOrCreate(
+                ['email' => $demo['email']],
+                [
+                    'name' => $demo['name'],
+                    'password' => bcrypt('password'),
+                    'role' => 'mahasiswa',
+                    'npm' => '250109'.rand(100, 999),
+                    'prodi' => 'TRPL',
+                ]
+            );
+
+            TeamJoinRequest::firstOrCreate(
+                ['team_id' => $team->id, 'user_id' => $u->id],
+                ['status' => $demo['status']]
+            );
+        }
+
+        $approvedCount = $team->joinRequests()->where('status', 'approved')->count();
+        $team->members_count = 1 + $approvedCount;
+        if ($team->capacity < 5) {
+            $team->capacity = 5;
+        }
+        $team->save();
     }
 
     public function updateTeam(Request $request, Team $team): RedirectResponse
@@ -150,54 +240,95 @@ class MahasiswaPageController extends Controller
         return back()->with('success', 'Informasi tim berhasil diperbarui.');
     }
 
-    public function removeMember(Request $request, Team $team, TeamJoinRequest $joinRequest): RedirectResponse
+    public function removeMember(Request $request, Team $team, TeamJoinRequest $joinRequest): RedirectResponse|JsonResponse
     {
         if ($team->owner_id !== $request->user()->id) {
             abort(403);
         }
 
         if ($joinRequest->team_id !== $team->id || $joinRequest->status !== 'approved') {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Anggota tidak ditemukan di tim ini.'], 422);
+            }
+
             return back()->with('error', 'Anggota tidak ditemukan di tim ini.');
         }
 
         $joinRequest->delete();
         $team->decrement('members_count');
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Anggota berhasil dikeluarkan dari tim.',
+                'members_count' => $team->members_count,
+                'capacity' => $team->capacity,
+            ]);
+        }
+
         return back()->with('success', 'Anggota berhasil dikeluarkan dari tim.');
     }
 
-    public function approveJoinRequest(Request $request, TeamJoinRequest $joinRequest): RedirectResponse
+    public function approveJoinRequest(Request $request, TeamJoinRequest $joinRequest): RedirectResponse|JsonResponse
     {
         if ($joinRequest->team->owner_id !== $request->user()->id) {
             abort(403);
         }
 
         if ($joinRequest->status !== 'pending') {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Permintaan ini sudah diproses.'], 422);
+            }
+
             return back()->with('error', 'Permintaan ini sudah diproses.');
         }
 
         $team = $joinRequest->team;
         if ($team->members_count >= $team->capacity) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Kuota anggota tim sudah penuh.'], 422);
+            }
+
             return back()->with('error', 'Kuota anggota tim sudah penuh.');
         }
 
         $joinRequest->update(['status' => 'approved']);
         $team->increment('members_count');
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $joinRequest->user->name.' diterima menjadi anggota tim.',
+                'members_count' => $team->members_count,
+                'capacity' => $team->capacity,
+            ]);
+        }
+
         return back()->with('success', $joinRequest->user->name.' diterima menjadi anggota tim.');
     }
 
-    public function rejectJoinRequest(Request $request, TeamJoinRequest $joinRequest): RedirectResponse
+    public function rejectJoinRequest(Request $request, TeamJoinRequest $joinRequest): RedirectResponse|JsonResponse
     {
         if ($joinRequest->team->owner_id !== $request->user()->id) {
             abort(403);
         }
 
         if ($joinRequest->status !== 'pending') {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Permintaan ini sudah diproses.'], 422);
+            }
+
             return back()->with('error', 'Permintaan ini sudah diproses.');
         }
 
         $joinRequest->update(['status' => 'rejected']);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Permintaan bergabung ditolak.',
+            ]);
+        }
 
         return back()->with('success', 'Permintaan bergabung ditolak.');
     }
@@ -283,7 +414,7 @@ class MahasiswaPageController extends Controller
             'menu' => [
                 ['Beranda', route('dashboard'), 'layout-dashboard', 'dashboard*'],
                 ['Profil Saya', route('profile'), 'user', 'profile*|profil*'],
-                ['Cari Tim', route('recruitment.index'), 'users', '*find-teams*|*cari-tim*|*filter-rekrutmen*'],
+                ['Pencarian', route('recruitment.index'), 'users', '*find-teams*|*cari-tim*|*filter-rekrutmen*'],
                 ['Filter Rekrutmen', route('filter-rekrutmen'), 'sliders-horizontal', 'filter-rekrutmen*'],
                 ['Kelola Tim', route('tim.index'), 'users-round', 'my-teams*|teams/*/detail'],
                 ['Pusat Lomba', route('competition.index'), 'trophy', 'find-competitions*|lomba*'],

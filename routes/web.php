@@ -69,6 +69,7 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
     Route::get('/my-teams', [MahasiswaPageController::class, 'teams'])->name('tim.index');
     Route::post('/teams', [MahasiswaPageController::class, 'createTeam'])->name('teams.store');
     Route::get('/teams/{team}/detail', [MahasiswaPageController::class, 'teamDetail'])->name('teams.detail');
+    Route::post('/teams/{team}/sync-stats', [MahasiswaPageController::class, 'syncStats'])->name('teams.sync-stats');
     Route::put('/teams/{team}', [MahasiswaPageController::class, 'updateTeam'])->name('teams.update');
     Route::delete('/teams/{team}/members/{joinRequest}', [MahasiswaPageController::class, 'removeMember'])->name('teams.members.remove');
     Route::post('/teams/{team}/join', function (Request $request, Team $team) {

@@ -18,7 +18,7 @@ class DashboardController extends Controller
         $menu = [
             ['Beranda', route('dashboard'), 'layout-dashboard', 'dashboard*'],
             ['Profil Saya', route('profile'), 'user', 'profile*|profil*'],
-            ['Cari Tim', route('recruitment.index'), 'users', ['find-teams*', 'cari-tim*', 'recruitment*']],
+            ['Pencarian', route('recruitment.index'), 'users', ['find-teams*', 'cari-tim*', 'recruitment*']],
             ['Filter Rekrutmen', route('filter-rekrutmen'), 'sliders-horizontal', 'filter-rekrutmen*'],
             ['Kelola Tim', route('tim.index'), 'users-round', 'my-teams*'],
             ['Pusat Lomba', route('competition.index'), 'trophy', 'find-competitions*'],
