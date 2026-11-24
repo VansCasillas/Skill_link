@@ -900,11 +900,7 @@
                     @endif
                 @endforeach
             </form>
-        @elseif (request()->routeIs('competition.index'))
-            <form class="search" method="GET" action="{{ route('competition.index') }}" role="search">
-                <i data-lucide="search" class="i" aria-hidden="true"></i>
-                <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari lomba atau penyelenggara..." aria-label="Cari lomba">
-            </form>
+
         @elseif (request()->routeIs('recruitment.index', 'cari-tim'))
             <form class="search" method="GET" action="{{ route('recruitment.index') }}" role="search">
                 <i data-lucide="search" class="i" aria-hidden="true"></i>
@@ -921,7 +917,7 @@
                 <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari nama tim atau lomba..." aria-label="Cari nama tim atau lomba">
             </form>
         @elseif (! request()->routeIs('portofolio.index', 'portofolio.public'))
-            <form class="search" method="GET" action="{{ route(auth()->user()?->role === 'admin' ? 'competition.manage.index' : 'competition.index') }}" role="search">
+            <form class="search" method="GET" action="{{ route(auth()->user()?->role === 'admin' ? 'competition.manage.index' : 'recruitment.index') }}" role="search">
                 <i data-lucide="search" class="i" aria-hidden="true"></i>
                 <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari lomba, tim, atau skill..." aria-label="Cari lomba, tim, atau skill">
             </form>
@@ -975,8 +971,18 @@
             </button>
         </div>
 
+        @php
+            $displayMenu = $menu ?? [];
+            $displayMenu = array_values(array_filter($displayMenu, fn($item) => $item[0] !== 'Pusat Lomba'));
+            if (auth()->user()?->role === 'admin') {
+                $hasManage = collect($displayMenu)->contains(fn($item) => $item[0] === 'Kelola Pusat Informasi Lomba');
+                if (!$hasManage) {
+                    $displayMenu[] = ['Kelola Pusat Informasi Lomba', route('competition.manage.index'), 'trophy', 'admin/kelola-pusat-informasi*'];
+                }
+            }
+        @endphp
         <nav class="menu">
-            @foreach($menu as [$label, $href, $icon, $pattern])
+            @foreach($displayMenu as [$label, $href, $icon, $pattern])
             <a href="{{ $href }}"
                 class="{{ request()->is($pattern) ? 'active' : '' }}"
                 title="{{ $label }}">

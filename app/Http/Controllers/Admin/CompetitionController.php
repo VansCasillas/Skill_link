@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use Carbon\Carbon;
+use Database\Seeders\CompetitionSeeder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,6 +18,11 @@ class CompetitionController extends Controller
     {
         $this->markExpiredCompetitions();
 
+        if (Competition::count() === 0) {
+            (new CompetitionSeeder)->run();
+            $this->markExpiredCompetitions();
+        }
+
         $query = Competition::query();
         $search = trim((string) $request->query('q', ''));
         $status = (string) $request->query('status', 'all');
@@ -26,7 +32,8 @@ class CompetitionController extends Controller
             $query->where(function ($competitionQuery) use ($search): void {
                 $competitionQuery
                     ->where('name', 'like', '%'.$search.'%')
-                    ->orWhere('organizer', 'like', '%'.$search.'%');
+                    ->orWhere('organizer', 'like', '%'.$search.'%')
+                    ->orWhere('category', 'like', '%'.$search.'%');
             });
         }
 
@@ -40,27 +47,21 @@ class CompetitionController extends Controller
             default => $query->orderByRaw("CASE WHEN status = 'ended' THEN 1 ELSE 0 END")->orderBy('deadline'),
         };
 
-        $competitions = $query->orderByDesc('id')->paginate(8)->withQueryString();
+        $competitions = $query->orderByDesc('id')->paginate(10)->withQueryString();
+
         $upcomingDeadlines = Competition::query()
             ->whereIn('status', ['active', 'draft'])
             ->whereDate('deadline', '>=', today())
             ->orderBy('deadline')
-            ->limit(4)
+            ->limit(3)
             ->get();
 
-        $needsAction = Competition::query()
-            ->orderBy('deadline')
-            ->get()
-            ->filter(function (Competition $competition): bool {
-                if ($competition->status === 'draft' || ! $competition->isCompleteForPublication()) {
-                    return true;
-                }
+        $draftCount = Competition::where('status', 'draft')->count();
 
-                return $competition->status === 'active'
-                    && today()->diffInDays($competition->deadline, false) <= 7;
-            })
-            ->take(5)
-            ->values();
+        $needsAction = Competition::query()
+            ->where('status', 'draft')
+            ->orderBy('deadline')
+            ->get();
 
         return view('mahasiswa.kelola-pusat-informasi-lomba', [
             'menu' => $this->adminMenu(),
@@ -68,6 +69,7 @@ class CompetitionController extends Controller
             'competitions' => $competitions,
             'upcomingDeadlines' => $upcomingDeadlines,
             'needsAction' => $needsAction,
+            'draftCount' => $draftCount,
             'stats' => [
                 'total' => Competition::count(),
                 'active' => Competition::where('status', 'active')->count(),
@@ -78,47 +80,34 @@ class CompetitionController extends Controller
         ]);
     }
 
-    public function publicIndex(Request $request): View
+    public function publicIndex(Request $request): RedirectResponse
     {
-        $this->markExpiredCompetitions();
+        $query = array_filter(['q' => $request->query('q')]);
 
-        $search = trim((string) $request->query('q', ''));
-        $competitions = Competition::query()
-            ->where('status', 'active')
-            ->whereDate('deadline', '>=', today())
-            ->when($search !== '', function ($query) use ($search): void {
-                $query->where(function ($competitionQuery) use ($search): void {
-                    $competitionQuery
-                        ->where('name', 'like', '%'.$search.'%')
-                        ->orWhere('organizer', 'like', '%'.$search.'%');
-                });
-            })
-            ->orderBy('deadline')
-            ->paginate(9)
-            ->withQueryString();
-
-        return view('mahasiswa.pusat-informasi-lomba', [
-            'menu' => $this->studentMenu(),
-            'user' => $this->layoutUser($request),
-            'competitions' => $competitions,
-            'search' => $search,
-        ]);
+        return redirect()->route('recruitment.index', $query);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $this->normalizeRequestData($request);
+
         $validated = $request->validate($this->rules());
         $validated['poster_path'] = $request->file('poster')?->store('competitions', 'public');
         unset($validated['poster']);
-        $validated['status'] = 'draft';
 
         Competition::create($validated);
 
-        return redirect()->route('competition.manage.index')->with('success', 'Lomba berhasil disimpan sebagai draf.');
+        $message = ($validated['status'] === 'active')
+            ? 'Lomba berhasil diterbitkan.'
+            : 'Lomba berhasil disimpan sebagai draf.';
+
+        return redirect()->route('competition.manage.index')->with('success', $message);
     }
 
     public function update(Request $request, Competition $competition): RedirectResponse
     {
+        $this->normalizeRequestData($request);
+
         $validated = $request->validate($this->rules());
 
         if ($validated['status'] === 'active' && Carbon::parse($validated['deadline'])->isBefore(today())) {
@@ -163,13 +152,33 @@ class CompetitionController extends Controller
             return back()->with('error', 'Hanya lomba berstatus draf yang dapat diterbitkan.');
         }
 
-        if (! $competition->isCompleteForPublication()) {
-            return back()->with('error', 'Lengkapi nama, penyelenggara, deskripsi, kategori, tingkat, tanggal, dan tautan pendaftaran sebelum menerbitkan lomba.');
-        }
-
         $competition->update(['status' => 'active']);
 
-        return redirect()->route('competition.manage.index')->with('success', 'Lomba berhasil diterbitkan dan kini terlihat oleh mahasiswa.');
+        return redirect()->route('competition.manage.index')->with('success', 'Lomba berhasil diterbitkan.');
+    }
+
+    private function normalizeRequestData(Request $request): void
+    {
+        $rawFee = $request->input('fee');
+        if ($rawFee === null || trim((string) $rawFee) === '' || strtolower(trim((string) $rawFee)) === 'gratis') {
+            $request->merge(['fee' => 0]);
+        } else {
+            $cleanFee = (int) preg_replace('/[^0-9]/', '', (string) $rawFee);
+            $request->merge(['fee' => $cleanFee]);
+        }
+
+        if (! $request->filled('opens_at')) {
+            $request->merge(['opens_at' => today()->toDateString()]);
+        }
+
+        $deadline = $request->input('deadline');
+        if ($deadline && preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', (string) $deadline, $matches)) {
+            $request->merge(['deadline' => sprintf('%04d-%02d-%02d', $matches[3], $matches[2], $matches[1])]);
+        }
+
+        if (! $request->filled('status')) {
+            $request->merge(['status' => 'draft']);
+        }
     }
 
     private function rules(): array
@@ -181,7 +190,7 @@ class CompetitionController extends Controller
             'category' => ['required', 'string', 'max:100'],
             'level' => ['required', Rule::in(['Regional', 'Nasional', 'Internasional'])],
             'opens_at' => ['required', 'date'],
-            'deadline' => ['required', 'date', 'after_or_equal:opens_at'],
+            'deadline' => ['required', 'date'],
             'fee' => ['required', 'integer', 'min:0', 'max:100000000'],
             'registration_url' => ['required', 'url', 'max:2048'],
             'poster' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
@@ -200,8 +209,14 @@ class CompetitionController extends Controller
     private function adminMenu(): array
     {
         return [
-            ['Kelola Pusat Lomba', route('competition.manage.index'), 'trophy', 'admin/kelola-pusat-informasi*'],
-            ['Validasi Portofolio', route('portfolio.validation.index'), 'badge-check', 'admin/validasi-portofolio*'],
+            ['Dashboard', route('dashboard'), 'layout-dashboard', 'dashboard*'],
+            ['Profil Saya', route('profile'), 'user', 'profile*|profil*'],
+            ['Pencarian', route('recruitment.index'), 'users', ['find-teams*', 'cari-tim*', 'recruitment*']],
+            ['Filter Rekrutmen', route('filter-rekrutmen'), 'sliders-horizontal', 'filter-rekrutmen*'],
+            ['Kelola Tim', route('tim.index'), 'users-round', 'my-teams*'],
+            ['Susunan Portofolio', route('portofolio.index'), 'briefcase', 'susunan-portofolio*'],
+            ['Kelola Pusat Informasi Lomba', route('competition.manage.index'), 'trophy', 'admin/kelola-pusat-informasi*'],
+            ['Validasi Nilai & Sertifikat', route('portfolio.validation.index'), 'badge-check', 'admin/validasi-portofolio*'],
         ];
     }
 
@@ -210,10 +225,9 @@ class CompetitionController extends Controller
         return [
             ['Beranda', route('dashboard'), 'layout-dashboard', 'dashboard*'],
             ['Profil Saya', route('profile'), 'user', 'profile*'],
-            ['Pencarian', route('recruitment.index'), 'users', '*find-teams*|*cari-tim*|*filter-rekrutmen*'],
+            ['Pencarian', route('recruitment.index'), 'users', ['*find-teams*', '*cari-tim*', '*recruitment*']],
             ['Filter Rekrutmen', route('filter-rekrutmen'), 'sliders-horizontal', 'filter-rekrutmen*'],
             ['Kelola Tim', route('tim.index'), 'users-round', 'my-teams*'],
-            ['Pusat Lomba', route('competition.index'), 'trophy', 'find-competitions*'],
             ['Susunan Portofolio', route('portofolio.index'), 'briefcase', 'susunan-portofolio*'],
             ['Pesan', route('messages.index'), 'message-circle', 'messages*'],
             ['Notifikasi', route('notifications'), 'bell', 'notifications*'],
@@ -225,11 +239,11 @@ class CompetitionController extends Controller
         $user = $request->user();
 
         return [
-            'name' => $user->name,
-            'prodi' => $isAdmin ? 'Admin' : 'TRPL',
-            'angkatan' => $isAdmin ? 'Skill Link' : substr((string) $user->npm, 0, 2),
-            'subline' => $isAdmin ? 'Admin · Skill Link' : null,
-            'inisial' => mb_strtoupper(mb_substr($user->name, 0, 1)),
+            'name' => $isAdmin ? 'Dzaky' : ($user->name ?? 'Dzaky'),
+            'prodi' => 'TRPL',
+            'angkatan' => '2025',
+            'subline' => $isAdmin ? 'Admin · TRPL' : (($user->prodi ?? 'TRPL').' · Angkatan '.($user->angkatan ?? '2025')),
+            'inisial' => mb_strtoupper(mb_substr($user->name ?? 'D', 0, 1)),
         ];
     }
 }

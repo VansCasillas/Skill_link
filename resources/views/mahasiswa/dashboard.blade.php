@@ -17,7 +17,7 @@
         </div>
         <div class="actions">
             <a class="btn white" href="{{ url('/cari-tim') }}">Cari Tim</a>
-            <a class="btn ghost" href="{{ url('/lomba') }}">Lihat Lomba</a>
+            <a class="btn ghost" href="{{ route('recruitment.index') }}">Lihat Lomba</a>
         </div>
         <div class="stack" aria-hidden="true">
             <span class="avatar" style="background:#FF7F50"></span>
@@ -46,7 +46,7 @@
         <div class="col">
             <section class="card">
                 <div class="card-head">
-                    <h3>Lomba Terbaru</h3><a href="{{ url('/lomba') }}">Lihat semua</a>
+                    <h3>Lomba Terbaru</h3><a href="{{ route('recruitment.index') }}">Lihat semua</a>
                 </div>
                 @forelse($lombas as $l)
                 <div class="row">

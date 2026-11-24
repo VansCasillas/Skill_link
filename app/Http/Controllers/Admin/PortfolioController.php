@@ -25,8 +25,14 @@ class PortfolioController extends Controller
 
         return view('mahasiswa.kelola-validasi-portofolio', [
             'menu' => [
-                ['Kelola Pusat Lomba', route('competition.manage.index'), 'trophy', 'admin/kelola-pusat-informasi*'],
-                ['Validasi Portofolio', route('portfolio.validation.index'), 'badge-check', 'admin/validasi-portofolio*'],
+                ['Dashboard', route('dashboard'), 'layout-dashboard', 'dashboard*'],
+                ['Profil Saya', route('profile'), 'user', 'profile*|profil*'],
+                ['Pencarian', route('recruitment.index'), 'users', ['find-teams*', 'cari-tim*', 'recruitment*']],
+                ['Filter Rekrutmen', route('filter-rekrutmen'), 'sliders-horizontal', 'filter-rekrutmen*'],
+                ['Kelola Tim', route('tim.index'), 'users-round', 'my-teams*'],
+                ['Susunan Portofolio', route('portofolio.index'), 'briefcase', 'susunan-portofolio*'],
+                ['Kelola Pusat Informasi Lomba', route('competition.manage.index'), 'trophy', 'admin/kelola-pusat-informasi*'],
+                ['Validasi Nilai & Sertifikat', route('portfolio.validation.index'), 'badge-check', 'admin/validasi-portofolio*'],
             ],
             'user' => [
                 'name' => $request->user()->name,

@@ -61,8 +61,8 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profil');
     Route::get('/profil/edit', [ProfileController::class, 'edit'])->name('profil.edit');
     Route::match(['put', 'post'], '/profil', [ProfileController::class, 'update'])->name('profile.update');
-    Route::get('/find-competitions', [CompetitionController::class, 'publicIndex'])->name('competition.index');
-    Route::get('/lomba', fn () => redirect()->route('competition.index'));
+    Route::get('/find-competitions', fn (Request $request) => redirect()->route('recruitment.index', array_filter(['q' => $request->query('q')])))->name('competition.index');
+    Route::get('/lomba', fn (Request $request) => redirect()->route('recruitment.index', array_filter(['q' => $request->query('q')])));
     Route::get('/find-teams', [CariTimController::class, 'index'])->name('recruitment.index');
     Route::get('/cari-tim', [CariTimController::class, 'index'])->name('cari-tim');
     Route::get('/filter-rekrutmen', [CariTimController::class, 'filterRekrutmen'])->name('filter-rekrutmen');
