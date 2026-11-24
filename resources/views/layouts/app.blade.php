@@ -953,12 +953,12 @@
                         @if (auth()->user()->foto)
                             <img src="{{ Storage::disk('public')->url(auth()->user()->foto) }}" alt="">
                         @else
-                            {{ $user['inisial'] ?? mb_strtoupper(mb_substr($user['name'], 0, 1)) }}
+                            {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
                         @endif
                     </span>
                     <span class="me-text">
-                        <span class="me-name">{{ $user['name'] }}</span>
-                        <span class="me-sub">{{ $user['subline'] ?? (($user['prodi'] ?? 'TRPL') . ' · Angkatan ' . ($user['angkatan'] ?? '')) }}</span>
+                        <span class="me-name">{{ auth()->user()->name }}</span>
+                        <span class="me-sub">{{ auth()->user()->prodi ?? 'TRPL' }} · Angkatan {{ auth()->user()->angkatan ?? '' }}</span>
                     </span>
                 </a>
             @else

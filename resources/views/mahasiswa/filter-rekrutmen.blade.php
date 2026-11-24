@@ -4,27 +4,6 @@
 
 {{-- ── Page-level styles ─────────────────────────────────────────────────────── --}}
 <style>
-    /* ===== Hero banner ===== */
-    .fr-hero {
-        width: 100%;
-        background: #1D4ED8;
-        border-radius: 14px;
-        padding: 33px 36px;
-        display: flex;
-        align-items: center;
-        min-height: 100px;
-        margin-bottom: 0;
-    }
-
-    .fr-hero h1 {
-        margin: 0;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-weight: 500;
-        font-size: 48px;
-        line-height: 1.1;
-        color: rgba(255, 255, 255, .85);
-    }
-
     /* ===== Layout (main + sidebar) ===== */
     .fr-layout {
         display: grid;
@@ -440,16 +419,13 @@
     @media (max-width: 1024px) {
         .fr-layout { grid-template-columns: 1fr; }
         .fr-aside   { position: static; }
-        .fr-hero h1 { font-size: 36px; }
     }
 
     @media (max-width: 640px) {
-        .fr-hero h1 { font-size: 26px; }
         .ta-btn { font-size: 12px; padding: 5px 10px; }
         .fr-content,
         .content { padding-left: 12px; padding-right: 12px; }
         .fr-layout { gap: 16px; }
-        .fr-hero { padding: 24px 20px; min-height: 82px; }
         .ta-top { align-items:flex-start; }
         .ta-footer { flex-wrap: wrap; }
         .ta-bar-wrap { flex-basis: calc(100% - 82px); }
@@ -461,11 +437,6 @@
 </style>
 
 <div class="content" style="max-width:1200px">
-
-    {{-- ── Hero Banner ── --}}
-    <div class="fr-hero">
-        <h1>Filter Rekrutmen</h1>
-    </div>
 
     {{-- ── Main layout ── --}}
     <div class="fr-layout">

@@ -8,23 +8,6 @@
    SUSUNAN PORTOFOLIO – Page Styles
 ═══════════════════════════════════════════════════════════════════ */
 
-/* Hero Banner */
-.sp-hero {
-    background: #1D4ED8;
-    min-height: 142px;
-    display: flex;
-    align-items: center;
-    padding: 0 32px;
-}
-.sp-hero-title {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-weight: 500;
-    font-size: 60px;
-    line-height: 76px;
-    color: rgba(255,255,255,0.85);
-    margin: 0;
-}
-
 /* Page Background */
 .sp-page {
     background: #CBDDF5;
@@ -724,16 +707,10 @@ textarea.form-control { resize: vertical; min-height: 80px; }
     .porto-thumb { grid-row: 1; }
 }
 @media (max-width: 900px) {
-    .sp-hero-title { font-size: 36px; }
     .sp-body { flex-direction: column; }
     .sp-preview-col { width: 100%; }
 }
 </style>
-
-{{-- ── Hero Banner ── --}}
-<div class="sp-hero">
-    <h1 class="sp-hero-title">Susunan Portofolio</h1>
-</div>
 
 {{-- ── Page body ── --}}
 <div class="sp-page">

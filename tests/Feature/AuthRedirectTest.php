@@ -81,4 +81,42 @@ class AuthRedirectTest extends TestCase
             ->assertSee(route('profile'), false)
             ->assertSee(route('notifications'), false);
     }
+
+    public function test_updated_profile_name_is_used_in_the_topbar_across_student_pages(): void
+    {
+        $student = User::factory()->create([
+            'role' => 'mahasiswa',
+            'jurusan' => 'Teknologi Informasi',
+            'prodi' => 'TRPL',
+            'angkatan' => '2022',
+            'bio' => 'Mahasiswa aktif',
+        ]);
+
+        $this->actingAs($student)
+            ->put(route('profile.update'), [
+                'name' => 'Nama Profil Terbaru',
+                'npm' => $student->npm,
+                'jurusan' => $student->jurusan,
+                'prodi' => $student->prodi,
+                'email' => $student->email,
+                'angkatan' => $student->angkatan,
+                'bio' => $student->bio,
+            ])
+            ->assertRedirect(route('profile'));
+
+        $studentPages = [
+            route('dashboard'),
+            route('recruitment.index'),
+            route('tim.index'),
+            route('portofolio.index'),
+            route('messages.index'),
+            route('notifications'),
+        ];
+
+        foreach ($studentPages as $page) {
+            $this->get($page)
+                ->assertOk()
+                ->assertSee('<span class="me-name">Nama Profil Terbaru</span>', false);
+        }
+    }
 }

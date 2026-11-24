@@ -109,6 +109,8 @@ class ManageTeamsTest extends TestCase
         $this->actingAs($student)
             ->get(route('filter-rekrutmen', ['q' => 'Visioner']))
             ->assertOk()
+            ->assertDontSee('<div class="fr-hero">', false)
+            ->assertSee('<h2>Filter Rekrutmen Tim</h2>', false)
             ->assertSee('Filter Rekrutmen')
             ->assertSee('Visioner Squad')
             ->assertDontSee('Byte Builders');

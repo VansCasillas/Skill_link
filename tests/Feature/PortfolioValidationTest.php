@@ -109,6 +109,8 @@ class PortfolioValidationTest extends TestCase
         $this->actingAs($student)
             ->get(route('portofolio.index'))
             ->assertOk()
+            ->assertDontSee('<div class="sp-hero">', false)
+            ->assertSee('<h1>Susunan Portofolio</h1>', false)
             ->assertSee('<a href="'.route('portofolio.public').'" class="btn-lihat-semua">', false);
     }
 }
