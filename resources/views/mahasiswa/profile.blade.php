@@ -27,6 +27,13 @@
         line-height: 38px
     }
 
+    .pf-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px
+    }
+
     .pf-cols {
         display: grid;
         grid-template-columns: 300px minmax(0, 1fr);
@@ -414,6 +421,10 @@
     }
 
     @media (max-width:640px) {
+        .pf-head {
+            align-items: flex-start
+        }
+
         .pf-row {
             grid-template-columns: 1fr
         }
@@ -437,7 +448,13 @@
 @endphp
 
 <div class="pf">
-    <h1>Edit Profil</h1>
+    <div class="pf-head">
+        <h1>Edit Profil</h1>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="pf-btn outline">Keluar</button>
+        </form>
+    </div>
 
     <form id="pf-form" method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" novalidate>
         @csrf

@@ -82,6 +82,25 @@ class AuthRedirectTest extends TestCase
             ->assertSee(route('notifications'), false);
     }
 
+    public function test_profile_page_has_a_logout_action_that_requires_login_again(): void
+    {
+        $student = User::factory()->create(['role' => 'mahasiswa']);
+
+        $this->actingAs($student)
+            ->get(route('profile'))
+            ->assertOk()
+            ->assertSee('action="'.route('logout').'"', false)
+            ->assertSee('>Keluar</button>', false);
+
+        $this->post(route('logout'))
+            ->assertRedirect(route('login'));
+
+        $this->assertGuest();
+
+        $this->get(route('dashboard'))
+            ->assertRedirect(route('login'));
+    }
+
     public function test_updated_profile_name_is_used_in_the_topbar_across_student_pages(): void
     {
         $student = User::factory()->create([
