@@ -17,6 +17,17 @@
         </section>
     @endif
 
+    @if ($selectedTeam && $oldMessagesCount > 0)
+        <form method="POST" action="{{ route('teams.messages.clear-old', $selectedTeam) }}" style="margin-bottom:16px">
+            @csrf
+            @method('DELETE')
+            <button class="btn outline" type="submit"
+                    onclick="return confirm('Sembunyikan pesan yang lebih dari 30 hari dari akun Anda? Pesan tetap terlihat oleh anggota lain.')">
+                Bersihkan {{ $oldMessagesCount }} pesan lama dari tampilan saya
+            </button>
+        </form>
+    @endif
+
     @if ($teams->isNotEmpty())
         <section class="card" style="display:grid;grid-template-columns:220px 1fr;gap:20px;min-height:480px">
             <aside style="border-right:1px solid #E2E8F0;padding-right:20px">

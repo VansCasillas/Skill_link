@@ -6,6 +6,8 @@ use App\Models\Competition;
 use App\Models\Team;
 use App\Models\TeamJoinRequest;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\Storage;
 
 class DashboardController extends Controller
 {
@@ -32,11 +34,13 @@ class DashboardController extends Controller
             ->orderBy('deadline')
             ->limit(3)
             ->get();
-        $profileFields = ['name', 'npm', 'jurusan', 'prodi', 'email', 'angkatan', 'bio', 'foto'];
-        $profilePercent = (int) round(
-            collect($profileFields)->filter(fn (string $field): bool => filled($u->{$field}))->count()
-            / count($profileFields) * 100
-        );
+        $profilePercent = $u->profileCompletionPercent();
+        $recentNotifications = $u->notifications()
+            ->latest()
+            ->limit(3)
+            ->get()
+            ->map(fn (DatabaseNotification $notification): string => (string) ($notification->data['title'] ?? 'Notifikasi baru'))
+            ->all();
 
         return view('mahasiswa.dashboard', [
             'menu' => $menu,
@@ -45,6 +49,7 @@ class DashboardController extends Controller
                 'prodi' => $u->prodi ?? 'TRPL',
                 'angkatan' => $u->angkatan ?? substr((string) $u->npm, 0, 2),
                 'inisial' => strtoupper(substr($u->name, 0, 1)),
+                'foto' => $u->foto ? Storage::disk('public')->url($u->foto) : null,
             ],
 
             // Ganti dengan query ke database, misalnya $u->teams()->count()
@@ -77,11 +82,7 @@ class DashboardController extends Controller
                 ['tgl' => '05', 'bln' => 'JAN', 'nama' => 'Kompetisi UI/UX'],
             ],
 
-            'notifs' => [
-                'Tim Garuda Code membuka rekrutmen baru.',
-                'Profil Anda baru 70% lengkap.',
-                'Lomba baru ditambahkan: Kompetisi UI/UX Mahasiswa.',
-            ],
+            'notifs' => $recentNotifications,
         ]);
     }
 

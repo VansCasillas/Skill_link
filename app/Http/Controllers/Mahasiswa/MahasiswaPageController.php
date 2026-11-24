@@ -7,11 +7,14 @@ use App\Models\Team;
 use App\Models\TeamJoinRequest;
 use App\Models\TeamMessage;
 use App\Models\User;
+use App\Notifications\TeamActivityNotification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 class MahasiswaPageController extends Controller
 {
     public function createTeam(Request $request): RedirectResponse
@@ -294,6 +297,11 @@ class MahasiswaPageController extends Controller
 
         $joinRequest->update(['status' => 'approved']);
         $team->increment('members_count');
+        $joinRequest->user->notify(new TeamActivityNotification(
+            'Permintaan gabung diterima',
+            'Anda diterima bergabung ke tim '.$team->name.'.',
+            route('messages.index', ['team' => $team->id]),
+        ));
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -322,6 +330,11 @@ class MahasiswaPageController extends Controller
         }
 
         $joinRequest->update(['status' => 'rejected']);
+        $joinRequest->user->notify(new TeamActivityNotification(
+            'Permintaan gabung ditolak',
+            'Permintaan Anda untuk bergabung ke tim '.$joinRequest->team->name.' ditolak.',
+            route('recruitment.index'),
+        ));
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -346,26 +359,28 @@ class MahasiswaPageController extends Controller
         $selectedTeam = $teams->firstWhere('id', (int) $request->query('team'))
             ?? $teams->first();
         $chatMessages = $selectedTeam
-            ? TeamMessage::with('user')->where('team_id', $selectedTeam->id)->oldest()->get()
+            ? $selectedTeam->messages()
+                ->with('user')
+                ->whereDoesntHave('hiddenByUsers', fn ($query) => $query->where('users.id', $user->id))
+                ->oldest()
+                ->get()
             : collect();
+        $oldMessagesCount = $chatMessages
+            ->filter(fn (TeamMessage $message): bool => $message->created_at->lt(now()->subDays(30)))
+            ->count();
 
         return view('mahasiswa.pesan', $this->pageData($request, [
             'teams' => $teams,
             'selectedTeam' => $selectedTeam,
             'chatMessages' => $chatMessages,
+            'oldMessagesCount' => $oldMessagesCount,
         ]));
     }
 
     public function sendMessage(Request $request, Team $team): RedirectResponse
     {
         $user = $request->user();
-        $canAccess = $team->owner_id === $user->id
-            || $team->joinRequests()
-                ->where('user_id', $user->id)
-                ->where('status', 'approved')
-                ->exists();
-
-        if (! $canAccess) {
+        if (! $this->canAccessTeam($user, $team)) {
             abort(403);
         }
 
@@ -379,31 +394,102 @@ class MahasiswaPageController extends Controller
             'body' => $validated['body'],
         ]);
 
+        $recipientIds = $team->joinRequests()
+            ->where('status', 'approved')
+            ->pluck('user_id');
+
+        if ($team->owner_id !== null) {
+            $recipientIds->push($team->owner_id);
+        }
+
+        $recipientIds = $recipientIds
+            ->unique()
+            ->reject(fn (int|string $recipientId): bool => (int) $recipientId === $user->id);
+        $notification = new TeamActivityNotification(
+            'Pesan baru di '.$team->name,
+            $user->name.': '.Str::limit($validated['body'], 120),
+            route('messages.index', ['team' => $team->id]),
+        );
+
+        User::query()->whereIn('id', $recipientIds)->get()->each(
+            fn (User $recipient): mixed => $recipient->notify($notification)
+        );
+
         return redirect()->route('messages.index', ['team' => $team->id])
             ->with('success', 'Pesan berhasil dikirim.');
     }
 
+    public function clearOldMessages(Request $request, Team $team): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! $this->canAccessTeam($user, $team)) {
+            abort(403);
+        }
+
+        $messageIds = $team->messages()
+            ->where('created_at', '<', now()->subDays(30))
+            ->whereDoesntHave('hiddenByUsers', fn ($query) => $query->where('users.id', $user->id))
+            ->pluck('team_messages.id');
+
+        if ($messageIds->isNotEmpty()) {
+            $timestamp = now();
+            $hiddenMessages = $messageIds->map(fn (int|string $messageId): array => [
+                'team_message_id' => (int) $messageId,
+                'user_id' => $user->id,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ])->all();
+
+            foreach (array_chunk($hiddenMessages, 500) as $hiddenMessageChunk) {
+                DB::table('hidden_team_messages')->insertOrIgnore($hiddenMessageChunk);
+            }
+        }
+
+        return redirect()->route('messages.index', ['team' => $team->id])
+            ->with('success', $messageIds->count().' pesan lama disembunyikan hanya untuk Anda.');
+    }
+
     public function notifications(Request $request): View
     {
+        $user = $request->user();
+        $user->unreadNotifications()->update(['read_at' => now()]);
+        $oldNotificationCount = $user->notifications()
+            ->where('created_at', '<', now()->subDays(30))
+            ->count();
+        $notifications = $user->notifications()
+            ->latest()
+            ->get()
+            ->map(fn (DatabaseNotification $notification): array => [
+                'title' => $notification->data['title'] ?? 'Notifikasi baru',
+                'description' => $notification->data['description'] ?? '',
+                'time' => $notification->created_at?->diffForHumans() ?? '',
+                'url' => $notification->data['url'] ?? route('notifications'),
+            ]);
+
         return view('mahasiswa.notifikasi', $this->pageData($request, [
-            'notifications' => [
-                [
-                    'title' => 'Undangan tim diterima',
-                    'description' => 'Anda telah bergabung dengan Tim Garuda Code.',
-                    'time' => '10 menit yang lalu',
-                ],
-                [
-                    'title' => 'Deadline lomba mendekat',
-                    'description' => 'Gemastik 2026 akan ditutup pada 30 November 2026.',
-                    'time' => '2 jam yang lalu',
-                ],
-                [
-                    'title' => 'Profil belum lengkap',
-                    'description' => 'Lengkapi profil agar lebih mudah ditemukan oleh tim.',
-                    'time' => 'Kemarin',
-                ],
-            ],
+            'notifications' => $notifications,
+            'oldNotificationCount' => $oldNotificationCount,
         ]));
+    }
+
+    public function clearOldNotifications(Request $request): RedirectResponse
+    {
+        $deletedCount = $request->user()->notifications()
+            ->where('created_at', '<', now()->subDays(30))
+            ->delete();
+
+        return redirect()->route('notifications')
+            ->with('success', $deletedCount.' notifikasi lama berhasil dibersihkan.');
+    }
+
+    private function canAccessTeam(User $user, Team $team): bool
+    {
+        return $team->owner_id === $user->id
+            || $team->joinRequests()
+                ->where('user_id', $user->id)
+                ->where('status', 'approved')
+                ->exists();
     }
 
     private function pageData(Request $request, array $data): array

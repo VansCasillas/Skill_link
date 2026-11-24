@@ -10,6 +10,7 @@ use App\Http\Controllers\Mahasiswa\PortofolioController;
 use App\Http\Controllers\Mahasiswa\ProfileController;
 use App\Models\Team;
 use App\Models\TeamJoinRequest;
+use App\Notifications\TeamActivityNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -96,13 +97,21 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
             'status' => 'pending',
         ]);
 
+        $team->owner?->notify(new TeamActivityNotification(
+            'Permintaan gabung tim',
+            $user->name.' ingin bergabung ke tim '.$team->name.'.',
+            route('teams.detail', $team),
+        ));
+
         return back()->with('success', 'Permintaan bergabung berhasil dikirim.');
     })->name('teams.join');
     Route::post('/team-requests/{joinRequest}/approve', [MahasiswaPageController::class, 'approveJoinRequest'])->name('teams.requests.approve');
     Route::post('/team-requests/{joinRequest}/reject', [MahasiswaPageController::class, 'rejectJoinRequest'])->name('teams.requests.reject');
     Route::get('/messages', [MahasiswaPageController::class, 'messages'])->name('messages.index');
     Route::post('/teams/{team}/messages', [MahasiswaPageController::class, 'sendMessage'])->name('teams.messages.store');
+    Route::delete('/teams/{team}/messages/old', [MahasiswaPageController::class, 'clearOldMessages'])->name('teams.messages.clear-old');
     Route::get('/notifications', [MahasiswaPageController::class, 'notifications'])->name('notifications');
+    Route::delete('/notifications/old', [MahasiswaPageController::class, 'clearOldNotifications'])->name('notifications.clear-old');
 
     // ── Susunan Portofolio ────────────────────────────────────────────────────
     Route::get('/susunan-portofolio', [PortofolioController::class, 'index'])->name('portofolio.index');

@@ -40,4 +40,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function profileCompletionPercent(): int
+    {
+        $fields = ['name', 'npm', 'jurusan', 'prodi', 'email', 'angkatan', 'bio', 'foto'];
+        $completed = collect($fields)
+            ->filter(fn (string $field): bool => filled($this->{$field}))
+            ->count();
+
+        return (int) round(($completed / count($fields)) * 100);
+    }
 }

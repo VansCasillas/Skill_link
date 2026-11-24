@@ -12,8 +12,22 @@
     </div>
 
     <section class="card">
-        @foreach ($notifications as $notification)
-            <article class="row">
+        @if (session('success'))
+            <p style="color:var(--ok)">{{ session('success') }}</p>
+        @endif
+
+        @if ($oldNotificationCount > 0)
+            <form method="POST" action="{{ route('notifications.clear-old') }}" style="margin-bottom:16px">
+                @csrf
+                @method('DELETE')
+                <button class="btn outline" type="submit">
+                    Bersihkan {{ $oldNotificationCount }} notifikasi yang lebih dari 30 hari
+                </button>
+            </form>
+        @endif
+
+        @forelse ($notifications as $notification)
+            <a class="row" href="{{ $notification['url'] }}">
                 <span class="ic" style="background:#0A87D9">
                     <i data-lucide="bell" class="i" aria-hidden="true"></i>
                 </span>
@@ -22,8 +36,10 @@
                     <span class="ds">{{ $notification['description'] }}</span>
                 </div>
                 <span class="chip">{{ $notification['time'] }}</span>
-            </article>
-        @endforeach
+            </a>
+        @empty
+            <p class="empty">Belum ada notifikasi.</p>
+        @endforelse
     </section>
 </div>
 @endsection

@@ -139,10 +139,7 @@ class ProfileController extends Controller
 
     private function hitungKelengkapan($u): int
     {
-        $isian = ['name', 'npm', 'jurusan', 'prodi', 'email', 'angkatan', 'bio', 'foto'];
-        $terisi = collect($isian)->filter(fn ($f) => filled($u->{$f}))->count();
-
-        return (int) round($terisi / count($isian) * 100);
+        return $u->profileCompletionPercent();
     }
 
     private function buildMenu(): array

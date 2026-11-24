@@ -239,7 +239,26 @@
             width: 38px;
             height: 38px;
             background: #14B8A6;
-            color: var(--ink)
+            color: var(--ink);
+            overflow: hidden
+        }
+
+        .me .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover
+        }
+
+        .profile .avatar {
+            overflow: hidden
+        }
+
+        .profile .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover
         }
 
         .me-text {
@@ -927,11 +946,15 @@
             @if (auth()->user()?->role === 'mahasiswa')
                 <a class="icon-btn" href="{{ route('notifications') }}" aria-label="Buka halaman Notifikasi" title="Notifikasi">
                     <i data-lucide="bell" class="i" aria-hidden="true"></i>
-                    @if(!empty($notifs))<span class="dot"></span>@endif
+                    @if (($unreadNotificationCount ?? 0) > 0)<span class="dot"></span>@endif
                 </a>
                 <a class="me" href="{{ route('profile') }}" aria-label="Buka halaman Profil" title="Profil">
                     <span class="avatar" aria-hidden="true">
-                        {{ $user['inisial'] ?? mb_strtoupper(mb_substr($user['name'], 0, 1)) }}
+                        @if (auth()->user()->foto)
+                            <img src="{{ Storage::disk('public')->url(auth()->user()->foto) }}" alt="">
+                        @else
+                            {{ $user['inisial'] ?? mb_strtoupper(mb_substr($user['name'], 0, 1)) }}
+                        @endif
                     </span>
                     <span class="me-text">
                         <span class="me-name">{{ $user['name'] }}</span>
@@ -941,7 +964,7 @@
             @else
                 <button class="icon-btn" type="button" aria-label="Notifikasi">
                     <i data-lucide="bell" class="i" aria-hidden="true"></i>
-                    @if(!empty($notifs))<span class="dot"></span>@endif
+                    @if (($unreadNotificationCount ?? 0) > 0)<span class="dot"></span>@endif
                 </button>
                 <div class="me">
                 <span class="avatar" aria-hidden="true">

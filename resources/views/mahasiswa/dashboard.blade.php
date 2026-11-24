@@ -86,7 +86,13 @@
         <aside class="col">
             <section class="card">
                 <div class="profile">
-                    <span class="avatar" aria-hidden="true">{{ $user['inisial'] }}</span>
+                    <span class="avatar" aria-hidden="true">
+                        @if ($user['foto'])
+                            <img src="{{ $user['foto'] }}" alt="">
+                        @else
+                            {{ $user['inisial'] }}
+                        @endif
+                    </span>
                     <div>
                         <div class="nm">{{ $user['name'] }}</div>
                         <div class="sub">{{ $user['prodi'] ?? 'TRPL' }} · Angkatan {{ $user['angkatan'] ?? '' }}</div>

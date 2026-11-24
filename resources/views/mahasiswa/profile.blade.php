@@ -451,7 +451,7 @@
                 <section class="pf-card pf-photo">
                     <div class="pf-avatar" id="pf-avatar">
                         @if($foto)
-                            <img src="{{ asset($foto) }}" alt="Foto profil">
+                            <img src="{{ $foto }}" alt="Foto profil">
                         @else
                             {{ $inisial }}
                         @endif
@@ -598,6 +598,32 @@
         var hapusFoto = document.getElementById('hapus-foto');
         var initial = @json($inisial);
         var hintDefault = hint.textContent;
+        var hasExistingFoto = @json((bool) $foto);
+        var progressLabel = document.querySelector('.pf-prog .lab b');
+        var progressTrack = document.querySelector('.pf-track');
+        var progressBar = progressTrack.querySelector('i');
+
+        function updateProfileProgress() {
+            var filledFields = 0;
+            ['name', 'npm', 'jurusan', 'prodi', 'email', 'angkatan', 'bio'].forEach(function(field) {
+                if (form.elements[field].value.trim() !== '') {
+                    filledFields++;
+                }
+            });
+
+            var hasFoto = hapusFoto.value === '0'
+                ? (hasExistingFoto || fotoInput.files.length > 0)
+                : (fotoInput.files.length > 0);
+
+            if (hasFoto) {
+                filledFields++;
+            }
+
+            var percent = Math.round((filledFields / 8) * 100);
+            progressLabel.textContent = percent + '%';
+            progressTrack.setAttribute('aria-valuenow', percent);
+            progressBar.style.width = percent + '%';
+        }
 
         function snapshot() {
             var o = {};
@@ -626,8 +652,15 @@
         function updateCount() {
             count.textContent = bio.value.length;
         }
-        bio.addEventListener('input', updateCount);
+        bio.addEventListener('input', function() {
+            updateCount();
+            updateProfileProgress();
+        });
         updateCount();
+
+        ['name', 'npm', 'jurusan', 'prodi', 'email', 'angkatan'].forEach(function(field) {
+            form.elements[field].addEventListener('input', updateProfileProgress);
+        });
 
         // Foto
         document.getElementById('btn-ubah-foto').addEventListener('click', function() {
@@ -656,12 +689,16 @@
             avatar.textContent = '';
             avatar.appendChild(img);
             hapusFoto.value = '0';
+            updateProfileProgress();
         });
         document.getElementById('btn-hapus-foto').addEventListener('click', function() {
             fotoInput.value = '';
             hapusFoto.value = '1';
             avatar.textContent = initial;
+            updateProfileProgress();
         });
+
+        updateProfileProgress();
 
         // Simpan
         document.getElementById('btn-simpan').addEventListener('click', function() {
