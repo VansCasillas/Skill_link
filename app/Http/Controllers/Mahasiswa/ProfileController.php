@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 
 class ProfileController extends Controller
 {
@@ -135,6 +136,25 @@ class ProfileController extends Controller
         $u->update($data);
 
         return redirect()->route('profile')->with('success', true);
+    }
+
+    public function changePassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'confirmed', 'different:current_password', PasswordRule::min(8)],
+        ], [
+            'current_password.required' => 'Kata sandi saat ini wajib diisi.',
+            'current_password.current_password' => 'Kata sandi saat ini tidak sesuai.',
+            'password.required' => 'Kata sandi baru wajib diisi.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+            'password.different' => 'Kata sandi baru harus berbeda dari kata sandi saat ini.',
+            'password.min' => 'Kata sandi minimal 8 karakter.',
+        ]);
+
+        $request->user()->update(['password' => $validated['password']]);
+
+        return redirect()->route('profile')->with('passwordSuccess', 'Kata sandi berhasil diubah.');
     }
 
     private function hitungKelengkapan($u): int

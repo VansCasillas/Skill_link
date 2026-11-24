@@ -560,6 +560,47 @@
             </section>
         </div>
     </form>
+
+<section class="pf-card pf-form">
+    <div>
+        <h2>Ubah Kata Sandi</h2>
+        <p class="desc">Masukkan kata sandi saat ini sebelum membuat kata sandi baru.</p>
+    </div>
+
+    @if (session('passwordSuccess'))
+        <p class="pf-hint" role="status" style="color:#067647">{{ session('passwordSuccess') }}</p>
+    @endif
+
+    <form method="POST" action="{{ route('password.change') }}" class="pf-form">
+        @csrf
+        @method('PUT')
+
+        <div class="pf-field">
+            <label for="current_password">Kata Sandi Saat Ini<i>*</i></label>
+            <input class="pf-input @error('current_password') invalid @enderror" type="password" id="current_password"
+                name="current_password" required autocomplete="current-password">
+            @error('current_password')<span class="pf-error">{{ $message }}</span>@enderror
+        </div>
+
+        <div class="pf-row">
+            <div class="pf-field">
+                <label for="password">Kata Sandi Baru<i>*</i></label>
+                <input class="pf-input @error('password') invalid @enderror" type="password" id="password"
+                    name="password" required autocomplete="new-password">
+                @error('password')<span class="pf-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="pf-field">
+                <label for="password_confirmation">Konfirmasi Kata Sandi Baru<i>*</i></label>
+                <input class="pf-input" type="password" id="password_confirmation"
+                    name="password_confirmation" required autocomplete="new-password">
+            </div>
+        </div>
+
+        <div class="pf-actions">
+            <button type="submit" class="pf-btn primary">Simpan Kata Sandi</button>
+        </div>
+    </form>
+</section>
 </div>
 
 {{-- Dialog: konfirmasi simpan --}}

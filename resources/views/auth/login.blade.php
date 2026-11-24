@@ -506,6 +506,13 @@ $showRegister = $registerErrors;
                     </div>
                     @endif
 
+                    @if(session('passwordReset'))
+                    <div class="banner ok" role="status">
+                        <span class="ico" aria-hidden="true">✓</span>
+                        <span>{{ session('passwordReset') }}</span>
+                    </div>
+                    @endif
+
                     {{-- Banner error masuk --}}
                     @if($loginErrors)
                     <div class="banner error" role="alert">
@@ -570,6 +577,9 @@ $showRegister = $registerErrors;
                             type="button"
                             id="go-to-register">Daftar</button>
                     </div>
+                    <a href="{{ route('password.request') }}" style="align-self:center;color:var(--btn);font-size:12px;font-weight:700;text-decoration:none">
+                        Lupa kata sandi?
+                    </a>
                 </form>
 
                 {{-- ════════════════════════════════════════════════════

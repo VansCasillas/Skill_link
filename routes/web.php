@@ -37,6 +37,11 @@ Route::middleware('guest')->group(function () {
 
     // Proses daftar (username, email, npm, password)
     Route::post('/register', [AuthController::class, 'register'])->name('register');
+
+    Route::get('/forgot-password', [AuthController::class, 'requestPasswordReset'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showPasswordResetForm'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
 
 // ── Logout (butuh sesi yang aktif) ───────────────────────────────────────────
@@ -62,6 +67,7 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profil');
     Route::get('/profil/edit', [ProfileController::class, 'edit'])->name('profil.edit');
     Route::match(['put', 'post'], '/profil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/password', [ProfileController::class, 'changePassword'])->name('password.change');
     Route::get('/find-competitions', fn (Request $request) => redirect()->route('recruitment.index', array_filter(['q' => $request->query('q')])))->name('competition.index');
     Route::get('/lomba', fn (Request $request) => redirect()->route('recruitment.index', array_filter(['q' => $request->query('q')])));
     Route::get('/find-teams', [CariTimController::class, 'index'])->name('recruitment.index');
