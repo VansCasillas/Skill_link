@@ -201,6 +201,387 @@
         color: #475569
     }
 
+    /* View-mode data card */
+    .pf-data {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(10, 51, 102, .08);
+        padding: 24px 26px
+    }
+
+    .pf-value {
+        font: 500 12px/15px 'Plus Jakarta Sans', system-ui, sans-serif;
+        color: #0F172A
+    }
+
+    .pf-value.bio {
+        white-space: pre-wrap;
+        line-height: 1.5
+    }
+
+    /* Portfolio list card (view mode) */
+    .pf-portfolio {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(10, 51, 102, .08);
+        padding: 24px 26px
+    }
+
+    .pf-portfolio-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px
+    }
+
+    .pf-portfolio-item {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 12px 14px
+    }
+
+    .pf-portfolio-thumb {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: #E2E8F0;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 16px;
+        flex-shrink: 0
+    }
+
+    .pf-portfolio-info {
+        flex: 1;
+        min-width: 0
+    }
+
+    .pf-portfolio-title {
+        font-weight: 700;
+        font-size: 13px;
+        line-height: 16px;
+        color: #0F172A;
+        margin: 0 0 2px
+    }
+
+    .pf-portfolio-type {
+        font-size: 10px;
+        line-height: 13px;
+        color: #64748B;
+        margin: 0 0 6px;
+        text-transform: uppercase;
+        letter-spacing: .05em
+    }
+
+    .pf-portfolio-desc {
+        font-size: 11px;
+        line-height: 14px;
+        color: #475569;
+        margin: 0 0 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden
+    }
+
+    .pf-portfolio-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 8px
+    }
+
+    .pf-tag {
+        padding: 2px 8px;
+        background: #EFF6FF;
+        border: 1px solid #BFDBFE;
+        border-radius: 20px;
+        font-size: 10px;
+        line-height: 13px;
+        color: #1D4ED8;
+        font-weight: 600
+    }
+
+    .pf-portfolio-img {
+        width: 70px;
+        height: 70px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #E2E8F0;
+        flex-shrink: 0
+    }
+
+    .pf-portfolio-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block
+    }
+
+    /* Detail view (read-only data diri) */
+    .pf-detail {
+        display: flex;
+        flex-direction: column;
+        gap: 14px
+    }
+
+    .pf-detail-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px
+    }
+
+    .pf-detail-row.pf-detail-row-full {
+        grid-template-columns: 1fr
+    }
+
+    .pf-detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px
+    }
+
+    .pf-detail-label {
+        font-size: 10px;
+        line-height: 13px;
+        color: #64748B;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .04em
+    }
+
+    .pf-detail-value {
+        font: 500 13px/16px 'Plus Jakarta Sans', system-ui, sans-serif;
+        color: #0F172A
+    }
+
+    .pf-detail-bio {
+        white-space: pre-wrap;
+        line-height: 1.55
+    }
+
+    .pf-line-subtle {
+        height: 1px;
+        background: #F1F5F9;
+        border: 0;
+        margin: 0
+    }
+
+    /* Portfolio header within detail card */
+    .pf-portfolio-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px
+    }
+
+    .pf-portfolio-header h3 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 15px;
+        line-height: 19px;
+        color: #0F172A
+    }
+
+    .pf-desc-small {
+        margin: 0;
+        font-size: 11px;
+        line-height: 14px;
+        color: #64748B;
+        flex: 1
+    }
+
+    /* Portfolio item improvements */
+    .pf-portfolio-item {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 12px 14px
+    }
+
+    .pf-portfolio-thumb {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: #E2E8F0;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 16px;
+        flex-shrink: 0
+    }
+
+    .pf-portfolio-info {
+        flex: 1;
+        min-width: 0
+    }
+
+    .pf-portfolio-title {
+        font-weight: 700;
+        font-size: 13px;
+        line-height: 16px;
+        color: #0F172A;
+        margin: 0 0 4px
+    }
+
+    .pf-portfolio-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 6px
+    }
+
+    .pf-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 10px;
+        line-height: 13px;
+        font-weight: 600
+    }
+
+    .pf-badge-proyek { background: #DBEAFE; color: #1D4ED8; }
+    .pf-badge-prestasi { background: #FEF3C7; color: #B45309; }
+    .pf-badge-sertifikat { background: #DCFCE7; color: #16A34A; }
+    .pf-badge-lain { background: #E2E8F0; color: #475569; }
+
+    .pf-tag-small {
+        padding: 1px 6px;
+        background: #EFF6FF;
+        border: 1px solid #BFDBFE;
+        border-radius: 20px;
+        font-size: 9px;
+        line-height: 12px;
+        color: #1D4ED8;
+        font-weight: 600
+    }
+
+    .pf-portfolio-desc {
+        font-size: 11px;
+        line-height: 14px;
+        color: #475569;
+        margin: 0 0 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden
+    }
+
+    .pf-portfolio-img {
+        width: 70px;
+        height: 70px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #E2E8F0;
+        flex-shrink: 0
+    }
+
+    /* Empty portfolio state */
+    .pf-empty-portfolio {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 32px 20px;
+        text-align: center;
+        color: #64748B
+    }
+
+    .pf-empty-icon {
+        font-size: 32px
+    }
+
+    .pf-empty-portfolio p {
+        margin: 0;
+        font-size: 13px;
+        line-height: 16px
+    }
+
+    .pf-btn-sm {
+        padding: 6px 16px;
+        font-size: 12px;
+        line-height: 15px
+    }
+
+    /* Portfolio image overlay */
+    .pf-img-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(10, 135, 217, .7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity .2s;
+        border-radius: 8px
+    }
+
+    .pf-portfolio-img:hover .pf-img-overlay {
+        opacity: 1
+    }
+
+    .pf-img-overlay span {
+        color: #fff;
+        font-weight: 700;
+        font-size: 12px;
+        background: rgba(0,0,0,.4);
+        padding: 4px 10px;
+        border-radius: 20px
+    }
+
+    /* Modal portfolio */
+    .pf-modal-portfolio {
+        position: relative;
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden
+    }
+
+    .pf-modal-close {
+        position: absolute;
+        top: 12px;
+        right: 14px;
+        background: rgba(0,0,0,.2);
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        font-size: 24px;
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1
+    }
+
+    .pf-modal-close:hover {
+        background: rgba(0,0,0,.4)
+    }
+
+    .pf-modal-portfolio-body {
+        padding: 24px
+    }
+
+    .pf-modal-portfolio-body h3 {
+        margin: 0 0 16px;
+        font-weight: 700;
+        font-size: 16px;
+        line-height: 20px;
+        color: #0F172A
+    }
+
     /* Form */
     .pf-form {
         display: flex;
@@ -437,6 +818,20 @@
         .pf-card {
             padding: 20px 18px
         }
+
+        .pf-portfolio-item {
+            flex-direction: column;
+            align-items: stretch
+        }
+
+        .pf-portfolio-img {
+            width: 100%;
+            height: 70px
+        }
+
+        .pf-detail-row {
+            grid-template-columns: 1fr
+        }
     }
 </style>
 
@@ -445,11 +840,13 @@
     $inisial  = strtoupper(mb_substr($nama ?: 'U', 0, 1));
     $persen   = $stats['profil'] ?? 0;
     $foto     = $user['foto'] ?? null;
+    $editMode = $editMode ?? false;
+    $portfolios = $portfolios ?? [];
 @endphp
 
 <div class="pf">
     <div class="pf-head">
-        <h1>Edit Profil</h1>
+        <h1>Profil</h1>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit" class="pf-btn outline">Keluar</button>
@@ -477,8 +874,12 @@
                     <div class="pf-sub">{{ $user['prodi'] ?? 'TRPL' }} · Angkatan {{ $user['angkatan'] ?? '' }}</div>
 
                     <div class="pf-photo-actions">
-                        <button type="button" class="pf-btn primary block" id="btn-ubah-foto">Ubah Foto</button>
-                        <button type="button" class="pf-btn gray block" id="btn-hapus-foto">Hapus Foto</button>
+                        @if($editMode)
+                            <button type="button" class="pf-btn primary block" id="btn-ubah-foto">Ubah Foto</button>
+                            <button type="button" class="pf-btn gray block" id="btn-hapus-foto">Hapus Foto</button>
+                        @else
+                            <a href="{{ route('profil.edit') }}" class="pf-btn primary block">Edit Profil</a>
+                        @endif
                     </div>
                     <div class="pf-hint" id="foto-hint">Format JPG atau PNG, maksimal 2 MB</div>
                     @error('foto')<div class="pf-hint err">{{ $message }}</div>@enderror
@@ -492,12 +893,17 @@
             </div>
 
             {{-- Kolom kanan --}}
-            <section class="pf-card pf-form">
+            @if($editMode)
+                <section class="pf-card pf-form">
+            @else
+                <section class="pf-card pf-data">
+            @endif
                 <div>
                     <h2>Data Diri</h2>
-                    <p class="desc">Isi data sesuai identitas mahasiswa. Tanda * wajib diisi.</p>
+                    <p class="desc">@if($editMode) Isi data sesuai identitas mahasiswa. Tanda * wajib diisi. @else Data profil Anda. Ubah melalui tombol Edit Profil. @endif</p>
                 </div>
 
+                @if($editMode)
                 <div class="pf-row">
                     <div class="pf-field">
                         <label for="name">Nama Lengkap<i>*</i></label>
@@ -542,65 +948,104 @@
                         @error('angkatan')<span class="pf-error">{{ $message }}</span>@enderror
                     </div>
                 </div>
-
-                <div class="pf-field">
-                    <label for="bio">Bio Singkat<i>*</i></label>
-                    <textarea class="pf-input @error('bio') invalid @enderror" id="bio" name="bio" required maxlength="300"
-                        placeholder="Maksimal 300 karakter">{{ old('bio', $user['bio'] ?? '') }}</textarea>
-                    <div class="pf-count"><span id="bio-count">0</span> / 300 karakter</div>
-                    @error('bio')<span class="pf-error">{{ $message }}</span>@enderror
+                @else
+                <div class="pf-detail">
+                    <div class="pf-detail-row">
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">Nama Lengkap</div>
+                            <div class="pf-detail-value">{{ $user['name'] ?? '-' }}</div>
+                        </div>
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">NPM</div>
+                            <div class="pf-detail-value">{{ $user['npm'] ?? '-' }}</div>
+                        </div>
+                    </div>
+                    <div class="pf-detail-row">
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">Jurusan</div>
+                            <div class="pf-detail-value">{{ $user['jurusan'] ?? '-' }}</div>
+                        </div>
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">Program Studi</div>
+                            <div class="pf-detail-value">{{ $user['prodi'] ?? 'TRPL' }}</div>
+                        </div>
+                    </div>
+                    <div class="pf-detail-row">
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">Email</div>
+                            <div class="pf-detail-value">{{ $user['email'] ?? '-' }}</div>
+                        </div>
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">Angkatan</div>
+                            <div class="pf-detail-value">{{ $user['angkatan'] ?? '-' }}</div>
+                        </div>
+                    </div>
+                    <div class="pf-detail-row pf-detail-row-full">
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">Bio Singkat</div>
+                            <div class="pf-detail-value pf-detail-bio">{{ $user['bio'] ?? '-' }}</div>
+                        </div>
+                    </div>
+                    <hr class="pf-line pf-line-subtle">
+                    <div class="pf-portfolio-header">
+                        <h3>Portofolio</h3>
+                        <p class="pf-desc-small">Karya yang Anda unggah melalui menu Susunan Portofolio.</p>
+                    </div>
+                    <div class="pf-portfolio-list">
+                        @if(count($portfolios) > 0)
+                            @foreach($portfolios as $p)
+                            <div class="pf-portfolio-item">
+                                <div class="pf-portfolio-thumb" style="background: {{ $p['warna'] ?? '#64748B' }};">
+                                    {{ $p['inisial'] ?? '?' }}
+                                </div>
+                                <div class="pf-portfolio-info">
+                                    <div class="pf-portfolio-title">{{ $p['judul'] }}</div>
+                                    <div class="pf-portfolio-meta">
+                                        <span class="pf-badge pf-badge-{{ strtolower(str_replace(' ', '-', $p['tipe'] ?? 'Lain')) }}">{{ $p['tipe'] }}</span>
+                                        @if(!empty($p['tags']))
+                                            @foreach($p['tags'] as $tag)
+                                            <span class="pf-tag-small">{{ $tag }}</span>
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                    @if(!empty($p['deskripsi']))
+                                    <div class="pf-portfolio-desc">{{ $p['deskripsi'] }}</div>
+                                    @endif
+                                </div>
+                                <div class="pf-portfolio-img" onclick="openPortfolioModal('{{ $p['bukti_url'] }}', '{{ $p['judul'] }}')">
+                                    <img src="{{ $p['bukti_url'] }}" alt="{{ $p['judul'] }}">
+                                    <div class="pf-img-overlay">
+                                        <span>Lihat bukti</span>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        @else
+                            <div class="pf-empty-portfolio">
+                                <span class="pf-empty-icon">📭</span>
+                                <p>Belum ada portofolio yang diunggah.</p>
+                                <a href="{{ route('portofolio.index') }}" class="pf-btn primary pf-btn-sm">Tambah Portofolio</a>
+                            </div>
+                        @endif
+                    </div>
                 </div>
-
-                <hr class="pf-line">
-
-                <div class="pf-actions">
-                    <button type="button" class="pf-btn outline" id="btn-batal">Batal</button>
-                    <button type="button" class="pf-btn primary" id="btn-simpan">Simpan Perubahan</button>
-                </div>
+                @endif
             </section>
-        </div>
-    </form>
 
-<section class="pf-card pf-form">
-    <div>
-        <h2>Ubah Kata Sandi</h2>
-        <p class="desc">Masukkan kata sandi saat ini sebelum membuat kata sandi baru.</p>
-    </div>
-
-    @if (session('passwordSuccess'))
-        <p class="pf-hint" role="status" style="color:#067647">{{ session('passwordSuccess') }}</p>
-    @endif
-
-    <form method="POST" action="{{ route('password.change') }}" class="pf-form">
-        @csrf
-        @method('PUT')
-
-        <div class="pf-field">
-            <label for="current_password">Kata Sandi Saat Ini<i>*</i></label>
-            <input class="pf-input @error('current_password') invalid @enderror" type="password" id="current_password"
-                name="current_password" required autocomplete="current-password">
-            @error('current_password')<span class="pf-error">{{ $message }}</span>@enderror
-        </div>
-
-        <div class="pf-row">
-            <div class="pf-field">
-                <label for="password">Kata Sandi Baru<i>*</i></label>
-                <input class="pf-input @error('password') invalid @enderror" type="password" id="password"
-                    name="password" required autocomplete="new-password">
-                @error('password')<span class="pf-error">{{ $message }}</span>@enderror
+            {{-- Modal: bukti portofolio --}}
+            <div class="pf-scrim" id="dlg-portfolio-modal" aria-hidden="true">
+                <div class="pf-dialog" style="max-width: 700px; padding: 0;">
+                    <div class="pf-modal-portfolio">
+                        <button type="button" class="pf-modal-close" onclick="closePortfolioModal()">&times;</button>
+                        <div class="pf-modal-portfolio-body">
+                            <h3 id="modal-portfolio-title"></h3>
+                            <img id="modal-portfolio-img" src="" alt="" style="width:100%;height:auto;border-radius:12px;display:block;margin:0 auto;">
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="pf-field">
-                <label for="password_confirmation">Konfirmasi Kata Sandi Baru<i>*</i></label>
-                <input class="pf-input" type="password" id="password_confirmation"
-                    name="password_confirmation" required autocomplete="new-password">
-            </div>
-        </div>
 
-        <div class="pf-actions">
-            <button type="submit" class="pf-btn primary">Simpan Kata Sandi</button>
-        </div>
     </form>
-</section>
 </div>
 
 {{-- Dialog: konfirmasi simpan --}}
@@ -648,6 +1093,7 @@
         var dlgSimpan = document.getElementById('dlg-simpan');
         var dlgBatal = document.getElementById('dlg-batal');
         var dlgSukses = document.getElementById('dlg-sukses');
+        var dlgPortfolioModal = document.getElementById('dlg-portfolio-modal');
         var bio = document.getElementById('bio');
         var count = document.getElementById('bio-count');
         var fotoInput = document.getElementById('foto');
@@ -787,9 +1233,21 @@
         });
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                [dlgSimpan, dlgBatal, dlgSukses].forEach(close);
+                [dlgSimpan, dlgBatal, dlgSukses, dlgPortfolioModal].forEach(close);
             }
         });
+
+        function openPortfolioModal(src, title) {
+            document.getElementById('modal-portfolio-img').src = src;
+            document.getElementById('modal-portfolio-title').textContent = title;
+            open(dlgPortfolioModal);
+        }
+
+        function closePortfolioModal() {
+            close(dlgPortfolioModal);
+            document.getElementById('modal-portfolio-img').src = '';
+        }
+
     })();
 </script>
 @endsection

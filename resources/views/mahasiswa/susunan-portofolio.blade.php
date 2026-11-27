@@ -64,47 +64,6 @@
 }
 .btn-simpan-susunan:hover { background: #1D4ED8; }
 
-/* Stats row */
-.sp-stats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 24px;
-}
-.stat-card {
-    min-height: 100px;
-    display: flex;
-    align-items: center;
-    padding: 16px 20px;
-    gap: 14px;
-    background: #FFFFFF;
-    box-shadow: 0 2px 10px rgba(10,51,102,0.06);
-    border-radius: 14px;
-}
-.stat-icon {
-    width: 40px; height: 40px;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    color: #fff;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-    flex-shrink: 0;
-}
-.stat-label {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-weight: 400;
-    font-size: 10px;
-    color: #64748B;
-    margin: 0 0 2px;
-}
-.stat-value {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    color: #0F172A;
-    margin: 0;
-}
-
 /* Two-column layout */
 .sp-body {
     display: flex;
@@ -697,7 +656,6 @@ textarea.form-control { resize: vertical; min-height: 80px; }
     .sp-main { width: 95%; }
 }
 @media (max-width: 760px) {
-    .sp-stats { grid-template-columns: 1fr; gap: 12px; }
     .sp-header { align-items: flex-start; gap: 12px; }
     .sp-tabs { align-items: flex-start; flex-direction: column; gap: 12px; }
     .tab-pills { max-width: 100%; overflow-x: auto; }
@@ -731,36 +689,6 @@ textarea.form-control { resize: vertical; min-height: 80px; }
                 <i data-lucide="save" style="width:14px;height:14px;"></i>
                 Simpan Susunan
             </button>
-        </div>
-
-        {{-- ── Stats ── --}}
-        @php
-            $total      = count($portfolios);
-            $ditampilkan = collect($portfolios)->where('ditampilkan', true)->count();
-            $draft      = $total - $ditampilkan;
-        @endphp
-        <div class="sp-stats">
-            <div class="stat-card">
-                <div class="stat-icon" style="background:#2563EB;">{{ $total }}</div>
-                <div>
-                    <p class="stat-label">Total Portofolio</p>
-                    <p class="stat-value">{{ $total }} karya</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background:#16A34A;">{{ $ditampilkan }}</div>
-                <div>
-                    <p class="stat-label">Ditampilkan</p>
-                    <p class="stat-value">{{ $ditampilkan }} di profil publik</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background:#F59E0B;">{{ $draft }}</div>
-                <div>
-                    <p class="stat-label">Draft</p>
-                    <p class="stat-value">{{ $draft }} belum dipublikasikan</p>
-                </div>
-            </div>
         </div>
 
         {{-- ── Body: list + preview ── --}}

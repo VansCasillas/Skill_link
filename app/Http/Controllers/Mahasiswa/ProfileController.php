@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Mahasiswa;
 
 use App\Http\Controllers\Controller;
+use App\Models\Portfolio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +19,25 @@ class ProfileController extends Controller
     {
         $u = $request->user();
 
+        $portfolios = Portfolio::where('user_id', $u->id)
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (Portfolio $portfolio): array => [
+                'id' => $portfolio->id,
+                'judul' => $portfolio->title,
+                'tipe' => $portfolio->type,
+                'deskripsi' => $portfolio->description ?? '',
+                'tags' => $portfolio->tags ?? [],
+                'warna' => match ($portfolio->type) {
+                    'Proyek' => '#2563EB',
+                    'Prestasi' => '#F59E0B',
+                    'Sertifikat' => '#16A34A',
+                    default => '#64748B',
+                },
+                'inisial' => strtoupper(mb_substr($portfolio->title, 0, 1)),
+                'bukti_url' => Storage::url($portfolio->evidence_path),
+            ]);
+
         return view('mahasiswa.profile', [
             'menu' => $this->buildMenu(),
             'user' => [
@@ -32,6 +52,8 @@ class ProfileController extends Controller
                 'inisial' => strtoupper(mb_substr($u->name ?? 'U', 0, 1)),
             ],
             'stats' => ['profil' => $this->hitungKelengkapan($u)],
+            'portfolios' => $portfolios->all(),
+            'editMode' => false,
         ]);
     }
 
@@ -80,6 +102,7 @@ class ProfileController extends Controller
                 'inisial' => strtoupper(mb_substr($u->name ?? 'U', 0, 1)),
             ],
             'stats' => ['profil' => $this->hitungKelengkapan($u)],
+            'editMode' => true,
         ]);
     }
 
