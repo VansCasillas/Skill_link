@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TeamJoinRequest extends Model
 {
-    protected $fillable = ['team_id', 'user_id', 'status'];
+    protected $fillable = ['team_id', 'user_id', 'status', 'type'];
 
     public function team(): BelongsTo
     {

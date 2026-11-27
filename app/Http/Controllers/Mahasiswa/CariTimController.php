@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Mahasiswa;
 
 use App\Http\Controllers\Controller;
+use App\Models\Portfolio;
 use App\Models\Team;
+use App\Models\TeamJoinRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CariTimController extends Controller
 {
@@ -12,29 +16,7 @@ class CariTimController extends Controller
     {
         $u = $request->user();
         $search = mb_strtolower(trim((string) $request->query('q', '')));
-        $teamNames = [
-            'Tim Garuda Code',
-            'Tim PixelForce',
-            'Tim Nusa Backend',
-            'Tim IoT Lampung',
-        ];
-
-        foreach ($teamNames as $index => $teamName) {
-            $team = Team::firstOrCreate(
-                ['name' => $teamName],
-                [
-                    'owner_id' => $teamName === 'Tim Garuda Code' ? $u->id : null,
-                    'capacity' => 4,
-                    'members_count' => $index === 1 ? 3 : 2,
-                    'competition' => match ($index) {
-                        0 => 'Gemastik 2026',
-                        1 => 'Kompetisi UI/UX Mahasiswa 2026',
-                        2 => 'Hackathon Nasional Kampus Digital',
-                        default => 'Innovation Challenge 2026',
-                    },
-                ]
-            );
-        }
+        $mode = $request->query('mode') === 'anggota' ? 'anggota' : 'tim';
 
         $menu = [
             ['Beranda', route('dashboard'), 'layout-dashboard', 'dashboard*'],
@@ -54,119 +36,197 @@ class CariTimController extends Controller
             'inisial' => strtoupper(mb_substr($u->name ?? 'D', 0, 1)),
         ];
 
-        // Data Tim yang mencari anggota (sesuai desain Figma)
-        $teams = [
-            [
-                'id' => 1,
-                'nama' => 'Tim Garuda Code',
-                'inisial' => 'G',
-                'warna' => '#FF7F50',
-                'lomba' => 'Gemastik 2026 · Pengembangan Perangkat Lunak',
-                'kategori' => 'Software Development',
-                'butuh_teks' => 'Butuh 2 anggota',
-                'deskripsi' => 'Mencari developer mobile dan UI designer untuk membangun aplikasi layanan publik berbasis Flutter.',
-                'skills' => ['Flutter', 'UI/UX', 'Mobile'],
-                'terisi' => 2,
-                'total' => 4,
-                'deadline' => '30 Nov 2026',
-                'anggota' => [
-                    ['inisial' => 'S', 'warna' => '#14B8A6'],
-                    ['inisial' => 'R', 'warna' => '#7C5CFC'],
+        $ownedTeams = Team::where('owner_id', $u->id)
+            ->whereColumn('members_count', '<', 'capacity')
+            ->orderBy('name')
+            ->get();
+        $ownedTeamIds = $ownedTeams->modelKeys();
+        $existingTeamRequests = TeamJoinRequest::query()
+            ->whereIn('team_id', $ownedTeamIds)
+            ->whereIn('status', ['pending', 'approved'])
+            ->get()
+            ->groupBy('user_id');
+
+        $allTeams = Team::query()
+            ->with(['owner', 'joinRequests' => fn ($query) => $query->where('status', 'approved')->with('user')])
+            ->whereNotNull('owner_id')
+            ->where('owner_id', '!=', $u->id)
+            ->whereColumn('members_count', '<', 'capacity')
+            ->whereDoesntHave('joinRequests', fn ($query) => $query
+                ->where('user_id', $u->id)
+                ->whereIn('status', ['pending', 'approved']))
+            ->latest()
+            ->get()
+            ->map(function (Team $team): array {
+                $members = collect([$team->owner])
+                    ->concat($team->joinRequests->pluck('user'))
+                    ->filter()
+                    ->map(fn (User $member): array => [
+                        'inisial' => mb_strtoupper(mb_substr($member->name, 0, 1)),
+                        'warna' => '#14B8A6',
+                    ])
+                    ->values()
+                    ->all();
+                $skills = $team->skills ?? [];
+
+                return [
+                    'id' => $team->id,
+                    'nama' => $team->name,
+                    'inisial' => mb_strtoupper(mb_substr($team->name, 0, 1)),
+                    'warna' => '#0369A1',
+                    'lomba' => $team->competition ?? 'Belum menentukan lomba',
+                    'butuh_teks' => 'Butuh '.max(0, $team->capacity - $team->members_count).' anggota',
+                    'deskripsi' => $team->description ?? 'Tim ini belum menambahkan deskripsi.',
+                    'skills' => $skills,
+                    'terisi' => $team->members_count,
+                    'total' => $team->capacity,
+                    'deadline' => '',
+                    'anggota' => $members,
+                ];
+            });
+        $teams = $allTeams->filter(function (array $team) use ($search): bool {
+            if ($search === '') {
+                return true;
+            }
+
+            $searchable = mb_strtolower(implode(' ', [
+                $team['nama'],
+                $team['lomba'],
+                $team['deskripsi'],
+                ...$team['skills'],
+            ]));
+
+            return str_contains($searchable, $search);
+        })->values();
+
+        $allMembers = User::query()
+            ->where('role', 'mahasiswa')
+            ->whereKeyNot($u->id)
+            ->with(['portfolios' => fn ($query) => $query
+                ->where('status', 'approved')
+                ->where('is_visible', true)
+                ->orderBy('sort_order')])
+            ->orderBy('name')
+            ->get()
+            ->map(function (User $member) use ($ownedTeams, $existingTeamRequests): array {
+                $portfolios = $member->portfolios->map(fn (Portfolio $portfolio): array => [
+                    'judul' => $portfolio->title,
+                    'tipe' => $portfolio->type,
+                    'deskripsi' => $portfolio->description ?? '',
+                    'tags' => $portfolio->tags ?? [],
+                    'bukti_url' => Storage::disk('public')->url($portfolio->evidence_path),
+                ]);
+                $skills = $portfolios->flatMap(fn (array $portfolio): array => $portfolio['tags'])
+                    ->filter()
+                    ->unique(fn (string $skill): string => mb_strtolower($skill))
+                    ->values()
+                    ->all();
+                $existingTeamIds = $existingTeamRequests->get($member->id, collect())
+                    ->pluck('team_id')
+                    ->all();
+
+                return [
+                    'id' => $member->id,
+                    'nama' => $member->name,
+                    'inisial' => mb_strtoupper(mb_substr($member->name, 0, 1)),
+                    'prodi' => $member->prodi ?? $member->jurusan ?? 'Program studi belum diisi',
+                    'angkatan' => $member->angkatan,
+                    'bio' => $member->bio,
+                    'skills' => $skills,
+                    'portfolios' => $portfolios->all(),
+                    'eligible_teams' => $ownedTeams
+                        ->reject(fn (Team $team): bool => in_array($team->id, $existingTeamIds))
+                        ->map(fn (Team $team): array => [
+                            'id' => $team->id,
+                            'nama' => $team->name,
+                        ])
+                        ->values()
+                        ->all(),
+                ];
+            })
+            ->values();
+        $members = $allMembers->filter(function (array $member) use ($search): bool {
+            if ($search === '') {
+                return true;
+            }
+
+            $portfolioText = collect($member['portfolios'])
+                ->flatMap(fn (array $portfolio): array => [
+                    $portfolio['judul'],
+                    $portfolio['tipe'],
+                    $portfolio['deskripsi'],
+                    ...$portfolio['tags'],
+                ]);
+            $searchable = mb_strtolower(implode(' ', [
+                $member['nama'],
+                $member['prodi'],
+                $member['angkatan'] ?? '',
+                $member['bio'] ?? '',
+                ...$member['skills'],
+                ...$portfolioText->all(),
+            ]));
+
+            return str_contains($searchable, $search);
+        })->values();
+
+        $teamSuggestions = $allTeams->flatMap(function (array $team): array {
+            return array_merge(
+                [
+                    ['value' => $team['nama'], 'type' => 'Tim', 'mode' => 'tim'],
+                    ['value' => $team['lomba'], 'type' => 'Lomba', 'mode' => 'tim'],
                 ],
-            ],
-            [
-                'id' => 2,
-                'nama' => 'Tim PixelForce',
-                'inisial' => 'P',
-                'warna' => '#0369A1',
-                'lomba' => 'Kompetisi UI/UX Mahasiswa 2026',
-                'kategori' => 'UI/UX Design',
-                'butuh_teks' => 'Butuh 2 anggota',
-                'deskripsi' => 'Butuh UI/UX researcher dan frontend developer untuk merancang ulang portal informasi kampus.',
-                'skills' => ['UI/UX', 'Frontend'],
-                'terisi' => 3,
-                'total' => 5,
-                'deadline' => '20 Des 2026',
-                'anggota' => [
-                    ['inisial' => 'D', 'warna' => '#FF7F50'],
-                    ['inisial' => 'C', 'warna' => '#14B8A6'],
-                    ['inisial' => 'O', 'warna' => '#7C5CFC'],
+                array_map(fn (string $skill): array => [
+                    'value' => $skill,
+                    'type' => 'Skill',
+                    'mode' => 'tim',
+                ], $team['skills']),
+            );
+        })->take(50);
+        $memberSuggestions = $allMembers->flatMap(function (array $member): array {
+            return array_merge(
+                [
+                    ['value' => $member['nama'], 'type' => 'Anggota', 'mode' => 'anggota'],
+                    ['value' => $member['prodi'], 'type' => 'Program studi', 'mode' => 'anggota'],
                 ],
-            ],
-            [
-                'id' => 3,
-                'nama' => 'Tim Nusa Backend',
-                'inisial' => 'N',
-                'warna' => '#14B8A6',
-                'lomba' => 'Hackathon Nasional Kampus Digital',
-                'kategori' => 'Hackathon',
-                'butuh_teks' => 'Butuh 2 anggota',
-                'deskripsi' => 'Mencari backend developer yang menguasai Laravel atau Node.js untuk sistem manajemen UMKM.',
-                'skills' => ['Backend', 'Laravel'],
-                'terisi' => 2,
-                'total' => 4,
-                'deadline' => '12 Des 2026',
-                'anggota' => [
-                    ['inisial' => 'L', 'warna' => '#0369A1'],
-                    ['inisial' => 'G', 'warna' => '#FF7F50'],
-                ],
-            ],
-            [
-                'id' => 4,
-                'nama' => 'Tim IoT Lampung',
-                'inisial' => 'I',
-                'warna' => '#7C5CFC',
-                'lomba' => 'Innovation Challenge 2026 · Smart Farming',
-                'kategori' => 'IoT',
-                'butuh_teks' => 'Butuh 1 anggota',
-                'deskripsi' => 'Butuh anggota yang paham mikrokontroler dan pemrograman sensor untuk proyek pertanian pintar.',
-                'skills' => ['IoT', 'Mobile'],
-                'terisi' => 3,
-                'total' => 4,
-                'deadline' => '5 Jan 2027',
-                'anggota' => [
-                    ['inisial' => 'O', 'warna' => '#14B8A6'],
-                    ['inisial' => 'T', 'warna' => '#FF7F50'],
-                    ['inisial' => 'S', 'warna' => '#0369A1'],
-                ],
-            ],
-        ];
+                array_map(fn (string $skill): array => [
+                    'value' => $skill,
+                    'type' => 'Skill',
+                    'mode' => 'anggota',
+                ], $member['skills']),
+                collect($member['portfolios'])
+                    ->map(fn (array $portfolio): array => [
+                        'value' => $portfolio['judul'],
+                        'type' => $portfolio['tipe'],
+                        'mode' => 'anggota',
+                    ])
+                    ->all(),
+            );
+        })->take(50);
+        $suggestions = $teamSuggestions
+            ->concat($memberSuggestions)
+            ->filter(fn (array $suggestion): bool => filled($suggestion['value']))
+            ->unique(fn (array $suggestion): string => mb_strtolower($suggestion['value'].'|'.$suggestion['mode']))
+            ->sortBy(fn (array $suggestion): int => $suggestion['mode'] === $mode ? 0 : 1)
+            ->take(100)
+            ->values();
 
-        $teamIds = Team::whereIn('name', collect($teams)->pluck('nama'))->pluck('id', 'name');
-        $teams = array_map(function (array $team) use ($teamIds): array {
-            $team['id'] = $teamIds->get($team['nama'], $team['id']);
+        $receivedInvitations = TeamJoinRequest::with(['team.owner'])
+            ->where('user_id', $u->id)
+            ->where('type', 'invitation')
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
 
-            return $team;
-        }, $teams);
-
-        if ($search !== '') {
-            $teams = array_values(array_filter($teams, function (array $team) use ($search): bool {
-                $searchable = mb_strtolower(implode(' ', [
-                    $team['nama'],
-                    $team['lomba'],
-                    $team['kategori'],
-                    $team['deskripsi'],
-                    ...$team['skills'],
-                ]));
-
-                return str_contains($searchable, $search);
-            }));
-        }
-
-        // Data Tim Saya (side card)
-        $myTeam = [
-            'nama' => 'Tim Garuda Code',
-            'inisial' => 'G',
-            'warna' => '#FF7F50',
-            'role' => 'Ketua',
-            'anggota' => 3,
-            'lomba' => 'Gemastik 2026',
-            'terisi' => 3,
-            'total' => 4,
-            'total_tim' => 2,
-        ];
-
-        return view('mahasiswa.cari-tim', compact('menu', 'user', 'teams', 'myTeam'));
+        return view('mahasiswa.cari-tim', [
+            'menu' => $menu,
+            'user' => $user,
+            'teams' => $teams->all(),
+            'members' => $members->all(),
+            'mode' => $mode,
+            'suggestions' => $suggestions,
+            'ownedTeams' => $ownedTeams,
+            'receivedInvitations' => $receivedInvitations,
+        ]);
     }
 
     public function filterRekrutmen(Request $request)

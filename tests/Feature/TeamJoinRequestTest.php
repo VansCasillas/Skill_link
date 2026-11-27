@@ -87,6 +87,81 @@ class TeamJoinRequestTest extends TestCase
             'team_id' => $team->id,
             'user_id' => $applicant->id,
             'status' => 'pending',
+            'type' => 'application',
+        ]);
+    }
+
+    public function test_team_owner_can_invite_a_member_and_the_member_can_accept(): void
+    {
+        $owner = User::factory()->create(['role' => 'mahasiswa']);
+        $member = User::factory()->create(['role' => 'mahasiswa']);
+        $team = Team::create([
+            'owner_id' => $owner->id,
+            'name' => 'Tim Undangan',
+            'competition' => 'Gemastik',
+            'capacity' => 4,
+            'members_count' => 1,
+        ]);
+
+        $this->actingAs($owner)
+            ->post(route('teams.invitations.store', $member), ['team_id' => $team->id])
+            ->assertRedirect();
+
+        $invitation = TeamJoinRequest::where('team_id', $team->id)
+            ->where('user_id', $member->id)
+            ->firstOrFail();
+        $this->assertSame('invitation', $invitation->type);
+        $this->assertSame('pending', $invitation->status);
+
+        $this->actingAs($member)
+            ->get(route('recruitment.index', ['mode' => 'anggota']))
+            ->assertOk()
+            ->assertSee('Undangan masuk')
+            ->assertSee($team->name);
+
+        $this->actingAs($member)
+            ->post(route('teams.invitations.accept', $invitation))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('team_join_requests', [
+            'id' => $invitation->id,
+            'status' => 'approved',
+            'type' => 'invitation',
+        ]);
+        $this->assertDatabaseHas('teams', [
+            'id' => $team->id,
+            'members_count' => 2,
+        ]);
+    }
+
+    public function test_only_the_invited_member_can_reject_an_invitation(): void
+    {
+        $owner = User::factory()->create(['role' => 'mahasiswa']);
+        $member = User::factory()->create(['role' => 'mahasiswa']);
+        $team = Team::create([
+            'owner_id' => $owner->id,
+            'name' => 'Tim Pilihan',
+            'capacity' => 4,
+            'members_count' => 1,
+        ]);
+        $invitation = TeamJoinRequest::create([
+            'team_id' => $team->id,
+            'user_id' => $member->id,
+            'type' => 'invitation',
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($owner)
+            ->post(route('teams.invitations.reject', $invitation))
+            ->assertForbidden();
+
+        $this->actingAs($member)
+            ->post(route('teams.invitations.reject', $invitation))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('team_join_requests', [
+            'id' => $invitation->id,
+            'status' => 'rejected',
         ]);
     }
 

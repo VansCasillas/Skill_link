@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+
 class MahasiswaPageController extends Controller
 {
     public function createTeam(Request $request): RedirectResponse
@@ -105,6 +106,7 @@ class MahasiswaPageController extends Controller
         $ownedTeamIds = Team::where('owner_id', $user->id)->pluck('id');
         $joinRequests = TeamJoinRequest::with(['user', 'team'])
             ->whereIn('team_id', $ownedTeamIds)
+            ->where('type', 'application')
             ->where('status', 'pending')
             ->latest()
             ->get();
@@ -125,6 +127,9 @@ class MahasiswaPageController extends Controller
 
         $joinRequests = TeamJoinRequest::with('user')
             ->where('team_id', $team->id)
+            ->where(fn ($query) => $query
+                ->where('type', 'application')
+                ->orWhere('status', 'approved'))
             ->latest()
             ->get();
 
@@ -274,7 +279,7 @@ class MahasiswaPageController extends Controller
 
     public function approveJoinRequest(Request $request, TeamJoinRequest $joinRequest): RedirectResponse|JsonResponse
     {
-        if ($joinRequest->team->owner_id !== $request->user()->id) {
+        if ($joinRequest->type !== 'application' || $joinRequest->team->owner_id !== $request->user()->id) {
             abort(403);
         }
 
@@ -317,7 +322,7 @@ class MahasiswaPageController extends Controller
 
     public function rejectJoinRequest(Request $request, TeamJoinRequest $joinRequest): RedirectResponse|JsonResponse
     {
-        if ($joinRequest->team->owner_id !== $request->user()->id) {
+        if ($joinRequest->type !== 'application' || $joinRequest->team->owner_id !== $request->user()->id) {
             abort(403);
         }
 
@@ -344,6 +349,92 @@ class MahasiswaPageController extends Controller
         }
 
         return back()->with('success', 'Permintaan bergabung ditolak.');
+    }
+
+    public function inviteMember(Request $request, User $member): RedirectResponse
+    {
+        $validated = $request->validate([
+            'team_id' => ['required', 'integer', 'exists:teams,id'],
+        ]);
+        $team = Team::whereKey($validated['team_id'])
+            ->where('owner_id', $request->user()->id)
+            ->firstOrFail();
+
+        if ($member->id === $request->user()->id || $member->role !== 'mahasiswa') {
+            abort(403);
+        }
+
+        if ($team->members_count >= $team->capacity) {
+            return back()->with('error', 'Kuota anggota '.$team->name.' sudah penuh.');
+        }
+
+        $joinRequest = TeamJoinRequest::firstOrNew([
+            'team_id' => $team->id,
+            'user_id' => $member->id,
+        ]);
+
+        if ($joinRequest->exists && in_array($joinRequest->status, ['pending', 'approved'], true)) {
+            return back()->with('error', 'Undangan atau keanggotaan untuk '.$member->name.' sudah tercatat.');
+        }
+
+        $joinRequest->fill([
+            'type' => 'invitation',
+            'status' => 'pending',
+        ])->save();
+
+        $member->notify(new TeamActivityNotification(
+            'Undangan bergabung ke tim',
+            'Anda diundang bergabung ke tim '.$team->name.'.',
+            route('recruitment.index', ['mode' => 'anggota']),
+        ));
+
+        return back()->with('success', 'Undangan bergabung berhasil dikirim kepada '.$member->name.'.');
+    }
+
+    public function acceptTeamInvitation(Request $request, TeamJoinRequest $joinRequest): RedirectResponse
+    {
+        if ($joinRequest->type !== 'invitation' || $joinRequest->user_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        if ($joinRequest->status !== 'pending') {
+            return back()->with('error', 'Undangan ini sudah diproses.');
+        }
+
+        $team = $joinRequest->team;
+        if ($team->members_count >= $team->capacity) {
+            return back()->with('error', 'Kuota anggota '.$team->name.' sudah penuh.');
+        }
+
+        $joinRequest->update(['status' => 'approved']);
+        $team->increment('members_count');
+        $team->owner?->notify(new TeamActivityNotification(
+            'Undangan tim diterima',
+            $request->user()->name.' menerima undangan untuk bergabung ke tim '.$team->name.'.',
+            route('messages.index', ['team' => $team->id]),
+        ));
+
+        return back()->with('success', 'Anda berhasil bergabung ke '.$team->name.'.');
+    }
+
+    public function rejectTeamInvitation(Request $request, TeamJoinRequest $joinRequest): RedirectResponse
+    {
+        if ($joinRequest->type !== 'invitation' || $joinRequest->user_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        if ($joinRequest->status !== 'pending') {
+            return back()->with('error', 'Undangan ini sudah diproses.');
+        }
+
+        $joinRequest->update(['status' => 'rejected']);
+        $joinRequest->team->owner?->notify(new TeamActivityNotification(
+            'Undangan tim ditolak',
+            $request->user()->name.' menolak undangan untuk bergabung ke tim '.$joinRequest->team->name.'.',
+            route('tim.index'),
+        ));
+
+        return back()->with('success', 'Undangan berhasil ditolak.');
     }
 
     public function messages(Request $request): View

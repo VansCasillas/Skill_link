@@ -390,6 +390,7 @@
     </div>
 
     <section class="manage-team-requests">
+        <h2>Permintaan Masuk Tim</h2>
         @forelse ($joinRequests as $joinRequest)
             <div class="manage-team-request">
                 <span class="manage-team-avatar" style="background:#2563EB; margin:0;">

@@ -91,7 +91,9 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
 
         if ($existing) {
             $message = $existing->status === 'pending'
-                ? 'Permintaan bergabung sudah menunggu persetujuan ketua tim.'
+                ? ($existing->type === 'invitation'
+                    ? 'Undangan dari tim ini sedang menunggu jawaban Anda.'
+                    : 'Permintaan bergabung sudah menunggu persetujuan ketua tim.')
                 : 'Permintaan bergabung telah diproses sebelumnya.';
 
             return back()->with('error', $message);
@@ -101,6 +103,7 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
             'team_id' => $team->id,
             'user_id' => $user->id,
             'status' => 'pending',
+            'type' => 'application',
         ]);
 
         $team->owner?->notify(new TeamActivityNotification(
@@ -111,6 +114,9 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
 
         return back()->with('success', 'Permintaan bergabung berhasil dikirim.');
     })->name('teams.join');
+    Route::post('/team-invitations/{member}', [MahasiswaPageController::class, 'inviteMember'])->name('teams.invitations.store');
+    Route::post('/team-invitations/{joinRequest}/accept', [MahasiswaPageController::class, 'acceptTeamInvitation'])->name('teams.invitations.accept');
+    Route::post('/team-invitations/{joinRequest}/reject', [MahasiswaPageController::class, 'rejectTeamInvitation'])->name('teams.invitations.reject');
     Route::post('/team-requests/{joinRequest}/approve', [MahasiswaPageController::class, 'approveJoinRequest'])->name('teams.requests.approve');
     Route::post('/team-requests/{joinRequest}/reject', [MahasiswaPageController::class, 'rejectJoinRequest'])->name('teams.requests.reject');
     Route::get('/messages', [MahasiswaPageController::class, 'messages'])->name('messages.index');

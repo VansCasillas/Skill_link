@@ -923,7 +923,11 @@
         @elseif (request()->routeIs('recruitment.index', 'cari-tim'))
             <form class="search" method="GET" action="{{ route('recruitment.index') }}" role="search">
                 <i data-lucide="search" class="i" aria-hidden="true"></i>
-                <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari nama tim, lomba, atau skill..." aria-label="Cari nama tim, lomba, atau skill">
+                <input type="hidden" name="mode" value="{{ request('mode', 'tim') }}">
+                <span class="ct-global-search-field">
+                    <input type="search" id="ct-global-search-input" name="q" value="{{ request('q') }}" placeholder="{{ request('mode') === 'anggota' ? 'Cari anggota, skill, atau portofolio...' : 'Cari nama tim, lomba, atau skill...' }}" aria-label="Cari tim atau anggota" autocomplete="off" aria-autocomplete="list" aria-controls="ct-global-search-suggestions" aria-expanded="false">
+                    <div class="ct-suggestions" id="ct-global-search-suggestions" role="listbox" aria-label="Saran pencarian" hidden></div>
+                </span>
             </form>
         @elseif (request()->routeIs('filter-rekrutmen'))
             <form class="search" method="GET" action="{{ route('filter-rekrutmen') }}" role="search">

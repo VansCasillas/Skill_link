@@ -93,6 +93,8 @@
     }
 
     .ct-search-box {
+        position: relative;
+        z-index: 20;
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -132,6 +134,73 @@
 
     .ct-search-box input::placeholder {
         color: #64748B;
+    }
+
+    .ct-suggestions {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        z-index: 30;
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 6px;
+        border: 1px solid #D7E3F3;
+        border-radius: 12px;
+        background: #FFFFFF;
+        box-shadow: 0 12px 28px rgba(10, 51, 102, .16);
+    }
+
+    .ct-suggestions[hidden] {
+        display: none;
+    }
+
+    .ct-global-search-field {
+        position: relative;
+        display: flex;
+        flex: 1;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .ct-global-search-field input {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .ct-suggestion {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 12px;
+        border: 0;
+        border-radius: 8px;
+        background: #FFFFFF;
+        color: #0F172A;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .ct-suggestion:hover,
+    .ct-suggestion:focus-visible {
+        outline: none;
+        background: #EFF6FF;
+    }
+
+    .ct-suggestion-label {
+        overflow: hidden;
+        font-size: 12px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ct-suggestion-type {
+        flex: none;
+        color: #64748B;
+        font-size: 10px;
     }
 
     .ct-sort-box {
@@ -690,6 +759,133 @@
         font-size: 13px;
     }
 
+    .ct-mode-tabs,
+    .ct-member-skills,
+    .ct-portfolio-list,
+    .ct-invitation-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .ct-mode-tabs a {
+        padding: 9px 14px;
+        border: 1px solid #CBDDF5;
+        border-radius: 10px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .ct-mode-tabs a.active {
+        background: #0A87D9;
+        border-color: #0A87D9;
+        color: #FFFFFF;
+    }
+
+    .ct-member-avatar {
+        width: 46px;
+        height: 46px;
+        flex: none;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #14B8A6;
+        color: #FFFFFF;
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+    .ct-portfolio-list {
+        flex-direction: column;
+    }
+
+    .ct-portfolio-preview {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        background: #F8FAFC;
+    }
+
+    .ct-portfolio-preview img {
+        width: 72px;
+        height: 72px;
+        flex: none;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #E2E8F0;
+    }
+
+    .ct-portfolio-preview strong,
+    .ct-invitation-copy strong {
+        display: block;
+        color: #0F172A;
+        font-size: 12px;
+    }
+
+    .ct-portfolio-preview p,
+    .ct-invitation-copy span {
+        display: block;
+        margin: 4px 0 0;
+        color: #64748B;
+        font-size: 11px;
+        line-height: 16px;
+    }
+
+    .ct-invite-form {
+        display: flex;
+        flex: 1;
+        gap: 8px;
+        min-width: 240px;
+    }
+
+    .ct-invite-form select {
+        min-width: 0;
+        flex: 1;
+        padding: 7px 10px;
+        border: 1px solid #CBD5E1;
+        border-radius: 9px;
+        background: #FFFFFF;
+        color: #334155;
+        font: inherit;
+        font-size: 11px;
+    }
+
+    .ct-invitation {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        border-radius: 12px;
+        background: #F8FAFC;
+    }
+
+    .ct-invitation-copy {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ct-invitation-actions form {
+        display: inline-flex;
+    }
+
+    .ct-flash {
+        padding: 12px 16px;
+        border-radius: 10px;
+        background: #ECFDF3;
+        color: #067647;
+        font-size: 13px;
+    }
+
+    .ct-flash.error {
+        background: #FEF3F2;
+        color: #B42318;
+    }
+
     /* ── Modal Popups ────────────────────────────────────────────────────── */
     .ct-modal-backdrop {
         position: fixed;
@@ -833,8 +1029,8 @@
     {{-- ── 1. Header Judul & Button + Buat Tim ────────────────────────────── --}}
     <div class="ct-header">
         <div class="ct-title-group">
-            <h1>Cari Tim</h1>
-            <p>Temukan tim lomba yang cocok dengan skill Anda atau rekrut anggota baru.</p>
+            <h1>{{ $mode === 'anggota' ? 'Cari Anggota' : 'Cari Tim' }}</h1>
+            <p>Temukan tim lomba yang cocok atau lihat profil dan portofolio calon anggota.</p>
         </div>
         <button class="ct-btn-create" type="button" id="btn-create-team">
             + Buat Tim
@@ -842,7 +1038,22 @@
     </div>
 
     {{-- ── 2. Pencarian & Urutkan ──────────────────────────────────────────── --}}
-    <div class="ct-search-bar">
+    <nav class="ct-mode-tabs" aria-label="Jenis pencarian">
+        <a class="{{ $mode === 'tim' ? 'active' : '' }}"
+           href="{{ route('recruitment.index', array_filter(['mode' => 'tim', 'q' => request('q')])) }}">Cari Tim</a>
+        <a class="{{ $mode === 'anggota' ? 'active' : '' }}"
+           href="{{ route('recruitment.index', array_filter(['mode' => 'anggota', 'q' => request('q')])) }}">Cari Anggota</a>
+    </nav>
+
+    @if (session('success'))
+        <div class="ct-flash" role="status">{{ session('success') }}</div>
+    @endif
+    @if (session('error'))
+        <div class="ct-flash error" role="alert">{{ session('error') }}</div>
+    @endif
+
+    <form class="ct-search-bar" id="ct-search-form" method="GET" action="{{ route('recruitment.index') }}">
+        <input type="hidden" name="mode" value="{{ $mode }}">
         <div class="ct-search-box">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="11" cy="11" r="8"></circle>
@@ -850,33 +1061,31 @@
             </svg>
             <input type="text"
                    id="ct-search-input"
+                   name="q"
                    value="{{ request('q') }}"
-                   list="ct-search-suggestions"
-                   placeholder="Cari nama tim, lomba, atau skill..."
-                   aria-label="Cari nama tim, lomba, atau skill">
-            <datalist id="ct-search-suggestions">
-                @foreach ($teams as $team)
-                    <option value="{{ $team['nama'] }}"></option>
-                    <option value="{{ $team['lomba'] }}"></option>
-                    @foreach ($team['skills'] as $skill)
-                        <option value="{{ $skill }}"></option>
-                    @endforeach
-                @endforeach
-            </datalist>
+                   autocomplete="off"
+                   aria-autocomplete="list"
+                   aria-controls="ct-search-suggestions"
+                   aria-expanded="false"
+                   placeholder="{{ $mode === 'anggota' ? 'Cari nama anggota, skill, proyek, atau sertifikat...' : 'Cari nama tim, lomba, atau skill...' }}"
+                   aria-label="{{ $mode === 'anggota' ? 'Cari nama anggota, skill, proyek, atau sertifikat' : 'Cari nama tim, lomba, atau skill' }}">
+            <div class="ct-suggestions" id="ct-search-suggestions" role="listbox" aria-label="Saran pencarian" hidden></div>
         </div>
 
-        <div class="ct-sort-box">
+        @if ($mode === 'tim')
+            <div class="ct-sort-box">
             <select class="ct-sort-select" id="ct-sort-select" aria-label="Urutkan">
                 <option value="terbaru" selected>Urutkan: Terbaru</option>
-                <option value="deadline">Urutkan: Deadline</option>
                 <option value="kuota">Urutkan: Sisa Kuota</option>
             </select>
             <span class="ct-sort-arrow" aria-hidden="true">▾</span>
-        </div>
-    </div>
+            </div>
+        @endif
+    </form>
 
     {{-- ── 3. Filter Chips & Count ────────────────────────────────────────── --}}
-    <div class="ct-chips-bar" role="tablist" aria-label="Filter Kategori Skill">
+    @if ($mode === 'tim')
+      <div class="ct-chips-bar" role="tablist" aria-label="Filter Kategori Skill">
         <button class="ct-chip active" type="button" data-skill="semua">Semua</button>
         <button class="ct-chip" type="button" data-skill="frontend">Frontend</button>
         <button class="ct-chip" type="button" data-skill="backend">Backend</button>
@@ -887,22 +1096,27 @@
 
         <span class="ct-spacer"></span>
         <span class="ct-count" id="ct-count-text">{{ count($teams) }} tim ditemukan</span>
-    </div>
+      </div>
+    @else
+      <span class="ct-count" id="ct-count-text">{{ count($members) }} anggota ditemukan</span>
+    @endif
 
     {{-- ── 4. Main Columns Layout ─────────────────────────────────────────── --}}
     <div class="ct-cols">
 
-        {{-- Kolom Kiri: Tim yang Mencari Anggota --}}
+        {{-- Kolom Kiri: Hasil pencarian --}}
         <div class="ct-left">
-            <h2 class="ct-left-title">Tim yang Mencari Anggota</h2>
+            <h2 class="ct-left-title">{{ $mode === 'anggota' ? 'Anggota dan portofolio publik' : 'Tim yang Mencari Anggota' }}</h2>
 
+            @if ($mode === 'tim')
             <div class="ct-team-cards" id="ct-cards-container">
                 @forelse($teams as $team)
                 <article class="ct-card"
                          data-team-id="{{ $team['id'] }}"
-                         data-name="{{ strtolower($team['nama']) }}"
-                         data-lomba="{{ strtolower($team['lomba']) }}"
-                         data-skills="{{ strtolower(implode(',', $team['skills'])) }}"
+                         data-name="{{ mb_strtolower($team['nama']) }}"
+                         data-lomba="{{ mb_strtolower($team['lomba']) }}"
+                         data-description="{{ mb_strtolower($team['deskripsi']) }}"
+                         data-skills="{{ mb_strtolower(implode(',', $team['skills'])) }}"
                          data-deadline="{{ $team['deadline'] }}"
                          data-quota="{{ $team['total'] - $team['terisi'] }}">
 
@@ -946,7 +1160,6 @@
                         {{-- Info Kuota & Deadline --}}
                         <div class="ct-card-meta">
                             <span class="ct-slot-text">{{ $team['terisi'] }} / {{ $team['total'] }} anggota</span>
-                            <span class="ct-deadline-text">Deadline {{ $team['deadline'] }}</span>
                         </div>
 
                         {{-- Tombol Aksi --}}
@@ -970,45 +1183,136 @@
                 @endforelse
             </div>
 
-            <div class="ct-empty" id="ct-no-results" style="display: none;">
-                <p>Tidak ada tim yang cocok dengan kriteria pencarian Anda.</p>
-            </div>
+            @if (count($teams) > 0)
+                <div class="ct-empty" id="ct-no-results" style="display: none;">
+                    <p>Tidak ada tim yang cocok dengan kriteria pencarian Anda.</p>
+                </div>
+            @endif
+            @else
+                <div class="ct-team-cards" id="ct-cards-container">
+                    @forelse ($members as $member)
+                        <article class="ct-card ct-member-card"
+                                 data-name="{{ mb_strtolower($member['nama'].' '.$member['prodi'].' '.($member['angkatan'] ?? '').' '.($member['bio'] ?? '')) }}"
+                                 data-skills="{{ mb_strtolower(implode(' ', $member['skills'])) }}"
+                                 data-portfolio="{{ mb_strtolower(implode(' ', collect($member['portfolios'])->flatMap(fn ($portfolio) => [$portfolio['judul'], $portfolio['tipe'], $portfolio['deskripsi'], ...$portfolio['tags']])->all())) }}">
+                            <div class="ct-card-top">
+                                <div class="ct-member-avatar">{{ $member['inisial'] }}</div>
+                                <div class="ct-card-title-group">
+                                    <span class="ct-card-team-name">{{ $member['nama'] }}</span>
+                                    <span class="ct-card-lomba-name">{{ $member['prodi'] }}{{ $member['angkatan'] ? ' · Angkatan '.$member['angkatan'] : '' }}</span>
+                                </div>
+                            </div>
+                            @if ($member['bio'])
+                                <p class="ct-card-desc">{{ $member['bio'] }}</p>
+                            @endif
+
+                            @if ($member['skills'])
+                                <div class="ct-member-skills" aria-label="Skill anggota">
+                                    @foreach ($member['skills'] as $skill)
+                                        <span class="ct-skill-tag">{{ $skill }}</span>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <strong class="ct-needed-label">Portofolio & sertifikat yang dipublikasikan</strong>
+                            @forelse ($member['portfolios'] as $portfolio)
+                                <div class="ct-portfolio-preview">
+                                    <img src="{{ $portfolio['bukti_url'] }}" alt="Bukti {{ $portfolio['judul'] }}" loading="lazy">
+                                    <div>
+                                        <strong>{{ $portfolio['judul'] }} <span class="ct-skill-tag">{{ $portfolio['tipe'] }}</span></strong>
+                                        @if ($portfolio['deskripsi'])
+                                            <p>{{ $portfolio['deskripsi'] }}</p>
+                                        @endif
+                                        @if ($portfolio['tags'])
+                                            <div class="ct-member-skills" style="margin-top:7px">
+                                                @foreach ($portfolio['tags'] as $tag)
+                                                    <span class="ct-skill-tag">{{ $tag }}</span>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="ct-card-desc">Belum ada portofolio publik yang tervalidasi.</p>
+                            @endforelse
+
+                            <div class="ct-card-divider"></div>
+                            @if ($member['eligible_teams'])
+                                <form class="ct-invite-form" method="POST" action="{{ route('teams.invitations.store', $member['id']) }}">
+                                    @csrf
+                                    <select name="team_id" aria-label="Pilih tim untuk mengundang {{ $member['nama'] }}" required>
+                                        <option value="">Pilih tim Anda</option>
+                                        @foreach ($member['eligible_teams'] as $team)
+                                            <option value="{{ $team['id'] }}">{{ $team['nama'] }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button class="ct-btn-join" type="submit">Undang bergabung</button>
+                                </form>
+                            @else
+                                <p class="ct-card-desc">Tidak ada tim Anda yang memiliki slot atau undangan terbuka untuk anggota ini.</p>
+                            @endif
+                        </article>
+                    @empty
+                        <div class="ct-empty"><p>Tidak ada anggota yang cocok. Coba kata kunci nama, skill, proyek, atau sertifikat.</p></div>
+                    @endforelse
+                </div>
+                @if (count($members) > 0)
+                    <div class="ct-empty" id="ct-no-results" style="display: none;">
+                        <p>Tidak ada anggota yang cocok dengan kriteria pencarian Anda.</p>
+                    </div>
+                @endif
+            @endif
         </div>
 
-        {{-- Kolom Kanan: Card Tim Saya --}}
+        {{-- Kolom Kanan: Tim dan undangan --}}
         <aside class="ct-right">
             <section class="ct-card-myteam">
                 <div class="ct-myteam-head">
-                    <h3>Tim Saya</h3>
-                    <span class="ct-myteam-chip">{{ $myTeam['total_tim'] ?? 2 }} tim</span>
+                    <h3>Tim yang Anda kelola</h3>
+                    <span class="ct-myteam-chip">{{ $ownedTeams->count() }} tim</span>
                 </div>
-
-                <div class="ct-myteam-body">
-                    <div class="ct-myteam-avatar" style="background: {{ $myTeam['warna'] ?? '#FF7F50' }};">
-                        {{ $myTeam['inisial'] ?? 'G' }}
+                @forelse ($ownedTeams as $team)
+                    <div class="ct-myteam-body">
+                        <div class="ct-myteam-avatar" style="background:#0369A1;">{{ mb_strtoupper(mb_substr($team->name, 0, 1)) }}</div>
+                        <div class="ct-myteam-info">
+                            <span class="ct-myteam-name">{{ $team->name }}</span>
+                            <span class="ct-myteam-sub">{{ $team->members_count }} / {{ $team->capacity }} anggota · {{ $team->competition }}</span>
+                        </div>
                     </div>
-                    <div class="ct-myteam-info">
-                        <span class="ct-myteam-name">{{ $myTeam['nama'] ?? 'Tim Garuda Code' }}</span>
-                        <span class="ct-myteam-sub">
-                            {{ $myTeam['role'] ?? 'Ketua' }} · {{ $myTeam['anggota'] ?? 3 }} anggota · {{ $myTeam['lomba'] ?? 'Gemastik 2026' }}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="ct-progress-group">
-                    <div class="ct-progress-label">
-                        <span>Slot terisi</span>
-                        <b>{{ $myTeam['terisi'] ?? 3 }} / {{ $myTeam['total'] ?? 4 }}</b>
-                    </div>
-                    <div class="ct-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100"
-                         aria-valuenow="{{ round((($myTeam['terisi'] ?? 3) / ($myTeam['total'] ?? 4)) * 100) }}">
-                        <div class="ct-progress-bar" style="width: {{ round((($myTeam['terisi'] ?? 3) / ($myTeam['total'] ?? 4)) * 100) }}%;"></div>
-                    </div>
-                </div>
+                @empty
+                    <p class="ct-card-desc">Anda belum memiliki tim dengan slot anggota terbuka.</p>
+                @endforelse
 
                 <a class="ct-btn-manage" href="{{ route('tim.index') }}">
                     Kelola Tim
                 </a>
+            </section>
+
+            <section class="ct-card-myteam">
+                <div class="ct-myteam-head">
+                    <h3>Undangan masuk</h3>
+                    <span class="ct-myteam-chip">{{ $receivedInvitations->count() }}</span>
+                </div>
+                @forelse ($receivedInvitations as $invitation)
+                    <div class="ct-invitation">
+                        <div class="ct-invitation-copy">
+                            <strong>{{ $invitation->team->name }}</strong>
+                            <span>Diundang oleh {{ $invitation->team->owner?->name ?? 'ketua tim' }}</span>
+                        </div>
+                        <div class="ct-invitation-actions">
+                            <form method="POST" action="{{ route('teams.invitations.accept', $invitation) }}">
+                                @csrf
+                                <button class="ct-btn-join" type="submit">Terima</button>
+                            </form>
+                            <form method="POST" action="{{ route('teams.invitations.reject', $invitation) }}">
+                                @csrf
+                                <button class="ct-btn-detail" type="submit">Tolak</button>
+                            </form>
+                        </div>
+                    </div>
+                @empty
+                    <p class="ct-card-desc">Belum ada undangan bergabung ke tim.</p>
+                @endforelse
             </section>
         </aside>
 
@@ -1083,6 +1387,10 @@
         'use strict';
 
         var searchInput = document.getElementById('ct-search-input');
+        var searchBox = document.querySelector('.ct-search-box');
+        var suggestionBox = document.getElementById('ct-search-suggestions');
+        var globalSearchInput = document.getElementById('ct-global-search-input');
+        var globalSuggestionBox = document.getElementById('ct-global-search-suggestions');
         var sortSelect  = document.getElementById('ct-sort-select');
         var chips       = document.querySelectorAll('.ct-chip');
         var cards       = Array.from(document.querySelectorAll('.ct-card'));
@@ -1092,6 +1400,9 @@
         var toastMsg    = document.getElementById('ct-toast-msg');
 
         var activeSkill = 'semua';
+        var isMemberMode = @json($mode === 'anggota');
+        var searchSuggestions = @json($suggestions);
+        var modeInputs = document.querySelectorAll('input[name="mode"]');
 
         // ── Toast Helper ───────────────────────────────────────────────────
         function showToast(message) {
@@ -1110,12 +1421,16 @@
             cards.forEach(function (card) {
                 var name     = card.getAttribute('data-name') || '';
                 var lomba    = card.getAttribute('data-lomba') || '';
+                var description = card.getAttribute('data-description') || '';
                 var skills   = card.getAttribute('data-skills') || '';
+                var portfolio = card.getAttribute('data-portfolio') || '';
 
                 var matchQuery = !query ||
                     name.indexOf(query) !== -1 ||
                     lomba.indexOf(query) !== -1 ||
-                    skills.indexOf(query) !== -1;
+                    description.indexOf(query) !== -1 ||
+                    skills.indexOf(query) !== -1 ||
+                    portfolio.indexOf(query) !== -1;
 
                 var matchSkill = activeSkill === 'semua' || skills.indexOf(activeSkill) !== -1;
 
@@ -1127,10 +1442,64 @@
                 }
             });
 
-            countText.textContent = visibleCount + ' tim ditemukan';
+            countText.textContent = visibleCount + (isMemberMode ? ' anggota ditemukan' : ' tim ditemukan');
             if (noResults) {
                 noResults.style.display = visibleCount === 0 ? 'flex' : 'none';
             }
+        }
+
+        function hideSuggestions(input, box) {
+            box.hidden = true;
+            input.setAttribute('aria-expanded', 'false');
+        }
+
+        function renderSuggestions(input, box, relatedInput) {
+            var query = (input.value || '').trim().toLowerCase();
+            var matches = searchSuggestions.filter(function (suggestion) {
+                return !query || suggestion.value.toLowerCase().indexOf(query) !== -1;
+            }).slice(0, 8);
+
+            box.textContent = '';
+            matches.forEach(function (suggestion) {
+                var option = document.createElement('button');
+                option.type = 'button';
+                option.className = 'ct-suggestion';
+                option.setAttribute('role', 'option');
+                option.setAttribute('aria-selected', 'false');
+
+                var label = document.createElement('span');
+                label.className = 'ct-suggestion-label';
+                label.textContent = suggestion.value;
+                var type = document.createElement('span');
+                type.className = 'ct-suggestion-type';
+                type.textContent = suggestion.type + (suggestion.mode === 'anggota' ? ' · Anggota' : ' · Tim');
+                option.appendChild(label);
+                option.appendChild(type);
+                option.addEventListener('mousedown', function (event) {
+                    event.preventDefault();
+                });
+                option.addEventListener('click', function () {
+                    var isChangingMode = suggestion.mode !== (isMemberMode ? 'anggota' : 'tim');
+                    input.value = suggestion.value;
+                    if (relatedInput) {
+                        relatedInput.value = suggestion.value;
+                    }
+                    modeInputs.forEach(function (modeInput) {
+                        modeInput.value = suggestion.mode;
+                    });
+                    hideSuggestions(input, box);
+                    if (isChangingMode) {
+                        input.form.submit();
+                    } else {
+                        filterCards();
+                        input.focus();
+                    }
+                });
+                box.appendChild(option);
+            });
+
+            box.hidden = matches.length === 0;
+            input.setAttribute('aria-expanded', matches.length > 0 ? 'true' : 'false');
         }
 
         // ── Filter Chips Click ─────────────────────────────────────────────
@@ -1144,9 +1513,45 @@
         });
 
         // ── Search Input Event ─────────────────────────────────────────────
-        if (searchInput) {
-            searchInput.addEventListener('input', filterCards);
+        function bindAutocomplete(input, box, relatedInput) {
+            if (!input || !box) {
+                return;
+            }
+
+            input.addEventListener('input', function () {
+                if (relatedInput) {
+                    relatedInput.value = input.value;
+                }
+                filterCards();
+                renderSuggestions(input, box, relatedInput);
+            });
+            input.addEventListener('focus', function () {
+                renderSuggestions(input, box, relatedInput);
+            });
+            input.addEventListener('keydown', function (event) {
+                if (event.key === 'ArrowDown' && !box.hidden) {
+                    var firstSuggestion = box.querySelector('.ct-suggestion');
+                    if (firstSuggestion) {
+                        event.preventDefault();
+                        firstSuggestion.focus();
+                    }
+                } else if (event.key === 'Escape') {
+                    hideSuggestions(input, box);
+                }
+            });
         }
+
+        bindAutocomplete(searchInput, suggestionBox, globalSearchInput);
+        bindAutocomplete(globalSearchInput, globalSuggestionBox, searchInput);
+
+        document.addEventListener('click', function (event) {
+            if (searchBox && !searchBox.contains(event.target)) {
+                hideSuggestions(searchInput, suggestionBox);
+            }
+            if (globalSearchInput && !globalSearchInput.parentElement.contains(event.target)) {
+                hideSuggestions(globalSearchInput, globalSuggestionBox);
+            }
+        });
 
         // ── Sort Event ─────────────────────────────────────────────────────
         if (sortSelect) {
@@ -1168,7 +1573,7 @@
                     // default: terbaru (urutan ID asli)
                     var idA = parseInt(a.getAttribute('data-team-id') || '0', 10);
                     var idB = parseInt(b.getAttribute('data-team-id') || '0', 10);
-                    return idA - idB;
+                    return idB - idA;
                 });
 
                 sorted.forEach(function (c) { container.appendChild(c); });
@@ -1176,7 +1581,7 @@
         }
 
         // ── Tombol Gabung ──────────────────────────────────────────────────
-        document.querySelectorAll('.ct-btn-join').forEach(function (btn) {
+        document.querySelectorAll('.ct-btn-join[data-join-id]').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var teamName = btn.getAttribute('data-team-name') || 'tim';
                 var teamId = btn.getAttribute('data-join-id');
@@ -1208,27 +1613,54 @@
 
         function openModalDetail(team) {
             currentDetailTeam = team;
-            detailBody.innerHTML =
-                '<div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">' +
-                    '<div class="ct-avatar-team" style="background:' + team.warna + ';">' + team.inisial + '</div>' +
-                    '<div>' +
-                        '<div style="font-weight:700; font-size:16px; color:#0F172A;">' + team.nama + '</div>' +
-                        '<div style="font-size:12px; color:#475569;">' + team.lomba + '</div>' +
-                    '</div>' +
-                '</div>' +
-                '<p style="font-size:13px; line-height:18px; color:#0F172A; margin:0 0 14px 0;">' + team.deskripsi + '</p>' +
-                '<div style="margin-bottom:14px;">' +
-                    '<strong style="font-size:12px; color:#475569; display:block; margin-bottom:6px;">Skill yang Dibutuhkan:</strong>' +
-                    '<div style="display:flex; gap:6px; flex-wrap:wrap;">' +
-                        team.skills.map(function(s) {
-                            return '<span class="ct-skill-tag">' + s + '</span>';
-                        }).join('') +
-                    '</div>' +
-                '</div>' +
-                '<div style="background:#F8FAFC; border-radius:12px; padding:12px 16px; display:flex; justify-content:space-between; font-size:12px;">' +
-                    '<span><strong>Status Kuota:</strong> ' + team.terisi + ' / ' + team.total + ' Anggota</span>' +
-                    '<span style="color:#B54708;"><strong>Deadline:</strong> ' + team.deadline + '</span>' +
-                '</div>';
+            detailBody.textContent = '';
+
+            var header = document.createElement('div');
+            header.style.cssText = 'display:flex; align-items:center; gap:12px; margin-bottom:14px;';
+            var avatar = document.createElement('div');
+            avatar.className = 'ct-avatar-team';
+            avatar.style.background = team.warna;
+            avatar.textContent = team.inisial;
+            var titleGroup = document.createElement('div');
+            var title = document.createElement('div');
+            title.style.cssText = 'font-weight:700; font-size:16px; color:#0F172A;';
+            title.textContent = team.nama;
+            var competition = document.createElement('div');
+            competition.style.cssText = 'font-size:12px; color:#475569;';
+            competition.textContent = team.lomba;
+            titleGroup.appendChild(title);
+            titleGroup.appendChild(competition);
+            header.appendChild(avatar);
+            header.appendChild(titleGroup);
+
+            var description = document.createElement('p');
+            description.style.cssText = 'font-size:13px; line-height:18px; color:#0F172A; margin:0 0 14px;';
+            description.textContent = team.deskripsi;
+
+            var skillsSection = document.createElement('div');
+            skillsSection.style.marginBottom = '14px';
+            var skillsTitle = document.createElement('strong');
+            skillsTitle.style.cssText = 'font-size:12px; color:#475569; display:block; margin-bottom:6px;';
+            skillsTitle.textContent = 'Skill yang Dibutuhkan:';
+            var skillsList = document.createElement('div');
+            skillsList.style.cssText = 'display:flex; gap:6px; flex-wrap:wrap;';
+            team.skills.forEach(function (skill) {
+                var skillTag = document.createElement('span');
+                skillTag.className = 'ct-skill-tag';
+                skillTag.textContent = skill;
+                skillsList.appendChild(skillTag);
+            });
+            skillsSection.appendChild(skillsTitle);
+            skillsSection.appendChild(skillsList);
+
+            var capacity = document.createElement('div');
+            capacity.style.cssText = 'background:#F8FAFC; border-radius:12px; padding:12px 16px; font-size:12px;';
+            capacity.textContent = 'Status kuota: ' + team.terisi + ' / ' + team.total + ' anggota';
+
+            detailBody.appendChild(header);
+            detailBody.appendChild(description);
+            detailBody.appendChild(skillsSection);
+            detailBody.appendChild(capacity);
 
             modalDetail.classList.add('open');
         }
