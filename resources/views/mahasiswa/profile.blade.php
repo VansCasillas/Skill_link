@@ -514,30 +514,8 @@
         line-height: 15px
     }
 
-    /* Portfolio image overlay */
-    .pf-img-overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(10, 135, 217, .7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity .2s;
-        border-radius: 8px
-    }
-
-    .pf-portfolio-img:hover .pf-img-overlay {
-        opacity: 1
-    }
-
-    .pf-img-overlay span {
-        color: #fff;
-        font-weight: 700;
-        font-size: 12px;
-        background: rgba(0,0,0,.4);
-        padding: 4px 10px;
-        border-radius: 20px
+    .pf-portfolio-img {
+        cursor: pointer
     }
 
     /* Modal portfolio */
@@ -678,6 +656,12 @@
         display: flex;
         justify-content: flex-end;
         gap: 12px
+    }
+
+    /* Section toggle transitions */
+    #section-data-view,
+    #section-data-edit {
+        transition: opacity .25s ease, display .25s ease
     }
 
     /* Dialog */
@@ -878,7 +862,7 @@
                             <button type="button" class="pf-btn primary block" id="btn-ubah-foto">Ubah Foto</button>
                             <button type="button" class="pf-btn gray block" id="btn-hapus-foto">Hapus Foto</button>
                         @else
-                            <a href="{{ route('profil.edit') }}" class="pf-btn primary block">Edit Profil</a>
+                            <button type="button" class="pf-btn primary block" id="btn-edit-profil">Edit Profil</button>
                         @endif
                     </div>
                     <div class="pf-hint" id="foto-hint">Format JPG atau PNG, maksimal 2 MB</div>
@@ -893,17 +877,100 @@
             </div>
 
             {{-- Kolom kanan --}}
-            @if($editMode)
-                <section class="pf-card pf-form">
-            @else
-                <section class="pf-card pf-data">
-            @endif
+
+            {{-- View mode: Data Diri read-only --}}
+            <section class="pf-card pf-data" id="section-data-view">
                 <div>
                     <h2>Data Diri</h2>
-                    <p class="desc">@if($editMode) Isi data sesuai identitas mahasiswa. Tanda * wajib diisi. @else Data profil Anda. Ubah melalui tombol Edit Profil. @endif</p>
+                    <p class="desc">Data profil Anda. Ubah melalui tombol Edit Profil.</p>
                 </div>
 
-                @if($editMode)
+                <div class="pf-detail">
+                    <div class="pf-detail-row">
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">Nama Lengkap</div>
+                            <div class="pf-detail-value" id="view-name">{{ $user['name'] ?? '-' }}</div>
+                        </div>
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">NPM</div>
+                            <div class="pf-detail-value" id="view-npm">{{ $user['npm'] ?? '-' }}</div>
+                        </div>
+                    </div>
+                    <div class="pf-detail-row">
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">Jurusan</div>
+                            <div class="pf-detail-value" id="view-jurusan">{{ $user['jurusan'] ?? '-' }}</div>
+                        </div>
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">Program Studi</div>
+                            <div class="pf-detail-value" id="view-prodi">{{ $user['prodi'] ?? 'TRPL' }}</div>
+                        </div>
+                    </div>
+                    <div class="pf-detail-row">
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">Email</div>
+                            <div class="pf-detail-value" id="view-email">{{ $user['email'] ?? '-' }}</div>
+                        </div>
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">Angkatan</div>
+                            <div class="pf-detail-value" id="view-angkatan">{{ $user['angkatan'] ?? '-' }}</div>
+                        </div>
+                    </div>
+                    <div class="pf-detail-row pf-detail-row-full">
+                        <div class="pf-detail-item">
+                            <div class="pf-detail-label">Bio Singkat</div>
+                            <div class="pf-detail-value pf-detail-bio" id="view-bio">{{ $user['bio'] ?? '-' }}</div>
+                        </div>
+                    </div>
+                    <hr class="pf-line pf-line-subtle">
+                    <div class="pf-portfolio-header">
+                        <h3>Portofolio</h3>
+                        <p class="pf-desc-small">Karya yang Anda unggah melalui menu Susunan Portofolio.</p>
+                    </div>
+                    <div class="pf-portfolio-list">
+                        @if(count($portfolios) > 0)
+                            @foreach($portfolios as $p)
+                            <div class="pf-portfolio-item">
+                                <div class="pf-portfolio-thumb" style="background: {{ $p['warna'] ?? '#64748B' }};">
+                                    {{ $p['inisial'] ?? '?' }}
+                                </div>
+                                <div class="pf-portfolio-info">
+                                    <div class="pf-portfolio-title">{{ $p['judul'] }}</div>
+                                    <div class="pf-portfolio-meta">
+                                        <span class="pf-badge pf-badge-{{ strtolower(str_replace(' ', '-', $p['tipe'] ?? 'Lain')) }}">{{ $p['tipe'] }}</span>
+                                        @if(!empty($p['tags']))
+                                            @foreach($p['tags'] as $tag)
+                                            <span class="pf-tag-small">{{ $tag }}</span>
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                    @if(!empty($p['deskripsi']))
+                                    <div class="pf-portfolio-desc">{{ $p['deskripsi'] }}</div>
+                                    @endif
+                                </div>
+                                <div class="pf-portfolio-img" data-src="{{ $p['bukti_url'] }}" data-title="{{ $p['judul'] }}">
+                                    <img src="{{ $p['bukti_url'] }}" alt="{{ $p['judul'] }}">
+                                </div>
+                            </div>
+                            @endforeach
+                        @else
+                            <div class="pf-empty-portfolio">
+                                <span class="pf-empty-icon">📭</span>
+                                <p>Belum ada portofolio yang diunggah.</p>
+                                <a href="{{ route('portofolio.index') }}" class="pf-btn primary pf-btn-sm">Tambah Portofolio</a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </section>
+
+            {{-- Edit mode: Data Diri form --}}
+            <section class="pf-card pf-form" id="section-data-edit" style="display:none;">
+                <div>
+                    <h2>Edit Data Diri</h2>
+                    <p class="desc">Isi data sesuai identitas mahasiswa. Tanda * wajib diisi.</p>
+                </div>
+
                 <div class="pf-row">
                     <div class="pf-field">
                         <label for="name">Nama Lengkap<i>*</i></label>
@@ -948,95 +1015,25 @@
                         @error('angkatan')<span class="pf-error">{{ $message }}</span>@enderror
                     </div>
                 </div>
-                @else
-                <div class="pf-detail">
-                    <div class="pf-detail-row">
-                        <div class="pf-detail-item">
-                            <div class="pf-detail-label">Nama Lengkap</div>
-                            <div class="pf-detail-value">{{ $user['name'] ?? '-' }}</div>
-                        </div>
-                        <div class="pf-detail-item">
-                            <div class="pf-detail-label">NPM</div>
-                            <div class="pf-detail-value">{{ $user['npm'] ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="pf-detail-row">
-                        <div class="pf-detail-item">
-                            <div class="pf-detail-label">Jurusan</div>
-                            <div class="pf-detail-value">{{ $user['jurusan'] ?? '-' }}</div>
-                        </div>
-                        <div class="pf-detail-item">
-                            <div class="pf-detail-label">Program Studi</div>
-                            <div class="pf-detail-value">{{ $user['prodi'] ?? 'TRPL' }}</div>
-                        </div>
-                    </div>
-                    <div class="pf-detail-row">
-                        <div class="pf-detail-item">
-                            <div class="pf-detail-label">Email</div>
-                            <div class="pf-detail-value">{{ $user['email'] ?? '-' }}</div>
-                        </div>
-                        <div class="pf-detail-item">
-                            <div class="pf-detail-label">Angkatan</div>
-                            <div class="pf-detail-value">{{ $user['angkatan'] ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="pf-detail-row pf-detail-row-full">
-                        <div class="pf-detail-item">
-                            <div class="pf-detail-label">Bio Singkat</div>
-                            <div class="pf-detail-value pf-detail-bio">{{ $user['bio'] ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <hr class="pf-line pf-line-subtle">
-                    <div class="pf-portfolio-header">
-                        <h3>Portofolio</h3>
-                        <p class="pf-desc-small">Karya yang Anda unggah melalui menu Susunan Portofolio.</p>
-                    </div>
-                    <div class="pf-portfolio-list">
-                        @if(count($portfolios) > 0)
-                            @foreach($portfolios as $p)
-                            <div class="pf-portfolio-item">
-                                <div class="pf-portfolio-thumb" style="background: {{ $p['warna'] ?? '#64748B' }};">
-                                    {{ $p['inisial'] ?? '?' }}
-                                </div>
-                                <div class="pf-portfolio-info">
-                                    <div class="pf-portfolio-title">{{ $p['judul'] }}</div>
-                                    <div class="pf-portfolio-meta">
-                                        <span class="pf-badge pf-badge-{{ strtolower(str_replace(' ', '-', $p['tipe'] ?? 'Lain')) }}">{{ $p['tipe'] }}</span>
-                                        @if(!empty($p['tags']))
-                                            @foreach($p['tags'] as $tag)
-                                            <span class="pf-tag-small">{{ $tag }}</span>
-                                            @endforeach
-                                        @endif
-                                    </div>
-                                    @if(!empty($p['deskripsi']))
-                                    <div class="pf-portfolio-desc">{{ $p['deskripsi'] }}</div>
-                                    @endif
-                                </div>
-                                <div class="pf-portfolio-img" onclick="openPortfolioModal('{{ $p['bukti_url'] }}', '{{ $p['judul'] }}')">
-                                    <img src="{{ $p['bukti_url'] }}" alt="{{ $p['judul'] }}">
-                                    <div class="pf-img-overlay">
-                                        <span>Lihat bukti</span>
-                                    </div>
-                                </div>
-                            </div>
-                            @endforeach
-                        @else
-                            <div class="pf-empty-portfolio">
-                                <span class="pf-empty-icon">📭</span>
-                                <p>Belum ada portofolio yang diunggah.</p>
-                                <a href="{{ route('portofolio.index') }}" class="pf-btn primary pf-btn-sm">Tambah Portofolio</a>
-                            </div>
-                        @endif
-                    </div>
+
+                <div class="pf-field">
+                    <label for="bio">Bio Singkat</label>
+                    <textarea class="pf-input @error('bio') invalid @enderror" id="bio" name="bio" rows="4" placeholder="Ceritakan diri anda secara singkat...">{{ old('bio', $user['bio'] ?? '') }}</textarea>
+                    <div class="pf-count" id="bio-count">0</div>
+                    @error('bio')<span class="pf-error">{{ $message }}</span>@enderror
                 </div>
-                @endif
+
+                <div class="pf-actions">
+                    <button type="button" class="pf-btn outline" id="btn-batal-edit">Batal</button>
+                    <button type="button" class="pf-btn primary" id="btn-simpan-edit">Simpan Perubahan</button>
+                </div>
             </section>
 
             {{-- Modal: bukti portofolio --}}
             <div class="pf-scrim" id="dlg-portfolio-modal" aria-hidden="true">
                 <div class="pf-dialog" style="max-width: 700px; padding: 0;">
                     <div class="pf-modal-portfolio">
-                        <button type="button" class="pf-modal-close" onclick="closePortfolioModal()">&times;</button>
+                        <button type="button" class="pf-modal-close" data-close-portfolio>&times;</button>
                         <div class="pf-modal-portfolio-body">
                             <h3 id="modal-portfolio-title"></h3>
                             <img id="modal-portfolio-img" src="" alt="" style="width:100%;height:auto;border-radius:12px;display:block;margin:0 auto;">
@@ -1106,6 +1103,95 @@
         var progressLabel = document.querySelector('.pf-prog .lab b');
         var progressTrack = document.querySelector('.pf-track');
         var progressBar = progressTrack.querySelector('i');
+
+        // Edit mode toggle elements
+        var btnEditProfil = document.getElementById('btn-edit-profil');
+        var sectionDataView = document.getElementById('section-data-view');
+        var sectionDataEdit = document.getElementById('section-data-edit');
+        var btnBatalEdit = document.getElementById('btn-batal-edit');
+        var btnSimpanEdit = document.getElementById('btn-simpan-edit');
+
+        // Map field name to view element id
+        var viewMap = {
+            name: 'view-name',
+            npm: 'view-npm',
+            jurusan: 'view-jurusan',
+            prodi: 'view-prodi',
+            email: 'view-email',
+            angkatan: 'view-angkatan',
+            bio: 'view-bio'
+        };
+
+        // Buka mode edit
+        btnEditProfil.addEventListener('click', function() {
+            sectionDataView.style.display = 'none';
+            sectionDataEdit.style.display = 'block';
+            btnEditProfil.style.display = 'none';
+        });
+
+        // Batal edit
+        btnBatalEdit.addEventListener('click', function() {
+            sectionDataEdit.style.display = 'none';
+            sectionDataView.style.display = 'block';
+            btnEditProfil.style.display = 'block';
+            // Reset form values ke data asli
+            form.elements['name'].value = document.getElementById('view-name').textContent;
+            form.elements['npm'].value = document.getElementById('view-npm').textContent;
+            form.elements['jurusan'].value = document.getElementById('view-jurusan').textContent;
+            form.elements['prodi'].value = document.getElementById('view-prodi').textContent;
+            form.elements['email'].value = document.getElementById('view-email').textContent;
+            form.elements['angkatan'].value = document.getElementById('view-angkatan').textContent;
+            form.elements['bio'].value = document.getElementById('view-bio').textContent === '-' ? '' : document.getElementById('view-bio').textContent;
+            updateCount();
+            updateProfileProgress();
+        });
+
+        // Preview real-time saat mengetik
+        function updatePreview() {
+            Object.keys(viewMap).forEach(function(field) {
+                var el = document.getElementById(viewMap[field]);
+                var val = form.elements[field].value.trim();
+                el.textContent = val !== '' ? val : '-';
+            });
+        }
+
+        ['name', 'npm', 'jurusan', 'prodi', 'email', 'angkatan', 'bio'].forEach(function(field) {
+            form.elements[field].addEventListener('input', function() {
+                updatePreview();
+                updateProfileProgress();
+            });
+        });
+
+        // Simpan perubahan via fetch
+        btnSimpanEdit.addEventListener('click', function() {
+            if (!form.reportValidity()) return;
+            var formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            }).then(function(response) {
+                if (response.ok) {
+                    return response.text();
+                }
+                throw new Error('Gagal menyimpan');
+            }).then(function(html) {
+                // Update view dengan nilai dari form
+                Object.keys(viewMap).forEach(function(field) {
+                    var el = document.getElementById(viewMap[field]);
+                    var val = form.elements[field].value.trim();
+                    el.textContent = val !== '' ? val : '-';
+                });
+                // Kembali ke view mode
+                sectionDataEdit.style.display = 'none';
+                sectionDataView.style.display = 'block';
+                btnEditProfil.style.display = 'block';
+                // Tampilkan dialog sukses
+                open(dlgSukses);
+            }).catch(function(err) {
+                alert('Gagal menyimpan perubahan: ' + err.message);
+            });
+        });
 
         function updateProfileProgress() {
             var filledFields = 0;
@@ -1235,6 +1321,22 @@
             if (e.key === 'Escape') {
                 [dlgSimpan, dlgBatal, dlgSukses, dlgPortfolioModal].forEach(close);
             }
+        });
+
+        // Buka modal portofolio saat klik gambar bukti
+        document.querySelectorAll('.pf-portfolio-img').forEach(function(img) {
+            img.addEventListener('click', function() {
+                var src = img.dataset.src;
+                var title = img.dataset.title;
+                openPortfolioModal(src, title);
+            });
+        });
+
+        // Tutup modal portofolio saat klik tombol close
+        document.querySelectorAll('[data-close-portfolio]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                closePortfolioModal();
+            });
         });
 
         function openPortfolioModal(src, title) {
